@@ -108,3 +108,6 @@ venv.bak/
 
 # XML
 *.xml
+
+# utest
+*.test.py
