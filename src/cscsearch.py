@@ -1,17 +1,18 @@
 import os
-from PyQt5 import uic, QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import QSettings
-from PyQt5.Qt import QApplication, Qt
+from PyQt5 import uic
+from PyQt5.QtGui import QIcon, QTextCursor
+from PyQt5.QtCore import QSettings, Qt
+from PyQt5.QtWidgets import QApplication, QDialog
 import sys
 import ctypes
 import operator
 import csv
 import time
 import subprocess
-from utils import xmlutils, logutils, const, cscruleprovider, cscrulevalidator, cscrulemap, cscexception
 from utils.p4helper import P4Helper, P4HelperException, P4InvalidDepotFileException, P4FailedToSyncException
 from utils.cscexception import CSCException, CSCFailOperation
 from utils.xmlutils import XmlHelper, XmlHelperException
+from utils.logutils import Logging, log_error, log_info, log_notice, log_warning
 
 SERVER = "localhost:1666"
 USER = "perforce"
@@ -21,21 +22,21 @@ BRANCH = "//depot/"
 
 UI_FILE = "ui\cscsearch.ui"
 ICON_FILE = "ui\cscsearch.png"
-VERSION = "1.00"
+VERSION = "0.03"
 
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
 
-class CSCSearch(QtWidgets.QDialog):
+class CSCSearch(QDialog):
     infos = []  # dict contains csc and files in branch
     results = []  # dict contains search result
     local_host = False
 
     def __init__(self):
         super(CSCSearch, self).__init__()
-        self.settings = QtCore.QSettings('my_org', 'my_app')
+        self.settings = QSettings('my_org', 'my_app')
         self.setupUI()
         self.setupLog()
 
@@ -76,18 +77,18 @@ class CSCSearch(QtWidgets.QDialog):
         myappid = 'mycompany.myproduct.subproduct.version'  # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
         uic.loadUi(resource_path(UI_FILE), self)
-        self.setWindowIcon(QtGui.QIcon(resource_path(ICON_FILE)))
+        self.setWindowIcon(QIcon(resource_path(ICON_FILE)))
         self.label_version.setText(self.label_version.text() + VERSION)
         self.restoreUI()
         self.setupOnChangedCallback()
         self.processArgument()
 
     def setupLog(self):
-        sys.stdout = logutils.Logging(newText=self.onLogChanged)
+        sys.stdout = Logging(newText=self.onLogChanged)
 
     def onLogChanged(self, text):
         cursor = self.te_message.textCursor()
-        cursor.movePosition(QtGui.QTextCursor.End)
+        cursor.movePosition(QTextCursor.End)
         cursor.insertHtml(text)
         self.te_message.setTextCursor(cursor)
         self.te_message.ensureCursorVisible()
@@ -110,17 +111,17 @@ class CSCSearch(QtWidgets.QDialog):
 
     def validateInput(self):
         if not self.le_server.text():
-            logutils.log_error(
+            log_error(
                 "Server address is empty, please specify server address !")
             return False
         if not self.le_user.text():
-            logutils.log_error("Username is empty, please specify username !")
+            log_error("Username is empty, please specify username !")
             return False
         if not self.le_password.text():
-            logutils.log_error("Password is empty, please specify password !")
+            log_error("Password is empty, please specify password !")
             return False
         if not self.le_branch.text():
-            logutils.log_error("Branch is empty, please specify branch !")
+            log_error("Branch is empty, please specify branch !")
             return False
         return True
 
@@ -138,7 +139,7 @@ class CSCSearch(QtWidgets.QDialog):
                 password = self.le_password.text()
                 self.p4 = P4Helper(server, user_name, password)
         except P4HelperException as e:
-            logutils.log_error(e)
+            log_error(e)
             return False
         return True
 
@@ -173,7 +174,7 @@ class CSCSearch(QtWidgets.QDialog):
         try:
             files = self.p4.getAllDepotFile(branch)
         except P4HelperException as e:
-            logutils.log_error(e)
+            log_error(e)
             return
         for f in files:
             sale = self.p4.getSaleCodeFromBranch(f)
@@ -188,7 +189,7 @@ class CSCSearch(QtWidgets.QDialog):
         if nb_sale >= 2 and self.cb_sale.findText('All') == -1:
             self.cb_sale.insertItem(0, 'All')
         if is_sale_found is False:
-            logutils.log_error(
+            log_error(
                 "Could not find any file in branch '%s'" % (branch))
 
     def onConnectBtnClicked(self):
@@ -197,13 +198,13 @@ class CSCSearch(QtWidgets.QDialog):
         self.te_message.clear()
         if self.validateInput() and self.connecToPerforce():
             self.updateClientWorkspace()
-            # self.createClientWorkspace()
+            # self.createClientWorkspace() #TODO: Create client workspace automatically
             self.updateSale()
         QApplication.restoreOverrideCursor()
 
     def validateOptions(self):
         if not self.le_tag_name.text():
-            logutils.log_error("Tag is empty, please specify tag !")
+            log_error("Tag is empty, please specify tag !")
             return False
 
     def isItemToWrite(self, value):
@@ -220,7 +221,7 @@ class CSCSearch(QtWidgets.QDialog):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.te_message.clear()
         if self.validateOptions:
-            logutils.log_notice('Search is starting ...')
+            log_notice('Search is starting ...')
             CSCSearch.results = []
             tag = self.le_tag_name.text()
             sale = self.cb_sale.currentText()
@@ -234,7 +235,7 @@ class CSCSearch(QtWidgets.QDialog):
                     except P4FailedToSyncException as e:
                         pass
                     except P4HelperException as e:
-                        logutils.log_error(e)
+                        log_error(e)
                         return
                     if os.path.isfile(local_file):  # Fix file that deleted from server but 'p4 files' cmd still get it
                         helper = XmlHelper(local_file)
@@ -275,12 +276,12 @@ class CSCSearch(QtWidgets.QDialog):
                 for result in CSCSearch.results:
                     if self.isItemToWrite(result['value']) is True:
                         out.write('%s%s%s%s\n' % (tag.ljust(tag_ljust_size), result['sale'].ljust(sale_ljust_size), result['value'].ljust(value_ljust_size), result['file']))
-            logutils.log_notice('Search is done. Output is written to %s and %s' % (csv_file, txt_file))
+            log_notice('Search is done. Output is written to %s and %s' % (csv_file, txt_file))
             QApplication.restoreOverrideCursor()
 
 
 if __name__ == '__main__':
-    app = QtWidgets.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     window = CSCSearch()
     window.show()
     settings = QSettings
