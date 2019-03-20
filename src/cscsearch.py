@@ -22,7 +22,7 @@ BRANCH = "//depot/"
 
 UI_FILE = "ui\cscsearch.ui"
 ICON_FILE = "ui\cscsearch.png"
-VERSION = "0.03"
+VERSION = "0.04"
 
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
@@ -36,7 +36,7 @@ class CSCSearch(QDialog):
 
     def __init__(self):
         super(CSCSearch, self).__init__()
-        self.settings = QSettings('my_org', 'my_app')
+        self.settings = QSettings('csctools', 'cscsearch')
         self.setupUI()
         self.setupLog()
 
@@ -48,14 +48,15 @@ class CSCSearch(QDialog):
         self.settings.setValue('wsp', clients)
         self.settings.setValue('branch', self.le_branch.text())
 
-    def restoreUI(self):
+    def restoreSettings(self):
         self.le_server.setText(self.settings.value('server'))
         self.le_user.setText(self.settings.value('user'))
         self.le_password.setText(self.settings.value('password'))
         clients = self.settings.value('wsp')
-        for client in clients:
-            if self.cb_wsp.findText(client) == -1:
-                self.cb_wsp.addItem(client)
+        if clients:
+            for client in clients:
+                if self.cb_wsp.findText(client) == -1:
+                    self.cb_wsp.addItem(client)
         self.cb_wsp.setCurrentText(self.settings.value('wsp_default'))
         self.le_branch.setText(self.settings.value('branch'))
 
@@ -79,7 +80,7 @@ class CSCSearch(QDialog):
         uic.loadUi(resource_path(UI_FILE), self)
         self.setWindowIcon(QIcon(resource_path(ICON_FILE)))
         self.label_version.setText(self.label_version.text() + VERSION)
-        self.restoreUI()
+        self.restoreSettings()
         self.setupOnChangedCallback()
         self.processArgument()
 

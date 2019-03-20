@@ -10,7 +10,7 @@ unusedtag_rule = "UnUsedTag"
 profilehandle_rule = "ProfileHandle"
 
 sales = [
-    'GLB', 'XME' , 'SMA', 'SIN', 'XEV', 'XXV',  # SEA
+    'GLB', 'XME' , 'SMA', 'SIN', 'STH',  'XEV', 'XXV',  # SEA
     'TEL', 'TNZ', 'VNZ',
     ]
 
