@@ -102,10 +102,12 @@ class P4Helper:
         """Get all files of branch including itself and its sub-directories
         """
         files = []
+        if branch[len(branch) - 1] is not '/':
+            branch = branch + "/"
         try:
-            files_dict = self.p4.run('files', branch + '.../*.*')
+            files_dict = self.p4.run('files', branch + '...')
         except P4Exception:
-            raise P4HelperException("Could not find branch %s in depot" %(branch))
+            raise P4HelperException("Could not find any file in branch %s in depot" %(branch))
         for file_dict in files_dict:
             files.append(file_dict['depotFile'])
         return files
