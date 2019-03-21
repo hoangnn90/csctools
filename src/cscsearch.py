@@ -169,12 +169,11 @@ class CSCSearch(QDialog):
 
     def updateSale(self):
         CSCSearch.infos.clear()
-        nb_sale = 0
+        sales = []
         if CSCSearch.local_host:
             branch = BRANCH
         else:
             branch = self.le_branch.text()
-        is_sale_found = False
         files = []
         try:
             files = self.p4.getAllDepotFile(branch)
@@ -186,16 +185,15 @@ class CSCSearch(QDialog):
             if sale is not None:
                 info = {'file': f, 'sale':sale}
                 CSCSearch.infos.append(info)  # add sale and file to dict
-                nb_sale = nb_sale + 1
-                is_sale_found = True
+                sales.append(sale)
                 if self.cb_sale.findText(sale) == -1:
                     self.cb_sale.addItem(sale)
                     self.pb_search.setEnabled(True)
-        if nb_sale >= 2 and self.cb_sale.findText('All') == -1:
+        sales = set(sales)
+        if len(sales) >= 2 and self.cb_sale.findText('All') == -1:
             self.cb_sale.insertItem(0, 'All')
-        if is_sale_found is False:
-            log_error(
-                "Could not find any file in branch '%s'" % (branch))
+        if len(sales) == 0:
+            log_error("Could not find any file in branch '%s'" % (branch))
 
     def onConnectBtnClicked(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
