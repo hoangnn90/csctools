@@ -243,7 +243,11 @@ class CSCSearch(QDialog):
                         log_error(e)
                         return
                     if os.path.isfile(local_file):  # Fix file that deleted from server but 'p4 files' cmd still get it
-                        helper = XmlHelper(local_file)
+                        try:
+                            helper = XmlHelper(local_file)
+                        except XmlHelperException as e:
+                            log_warning(e)
+                            continue
                         tag_values = helper.getTagContents(local_file, tag)
                         if tag_values:
                             for tag_value in tag_values:
