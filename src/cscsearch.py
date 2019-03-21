@@ -23,7 +23,7 @@ BRANCH = "//depot/"
 
 UI_FILE = "ui\cscsearch.ui"
 ICON_FILE = "ui\cscsearch.png"
-VERSION = "0.05"
+VERSION = "0.06"
 
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
