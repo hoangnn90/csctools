@@ -193,7 +193,7 @@
      <bool>false</bool>
     </property>
     <property name="text">
-     <string>perforce</string>
+     <string/>
     </property>
     <property name="echoMode">
      <enum>QLineEdit::Password</enum>
@@ -389,14 +389,23 @@ QGroupBox::title
      <string> lam.bich</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="cb_wsp">
+   <widget class="QLineEdit" name="le_wsp">
     <property name="geometry">
      <rect>
       <x>370</x>
       <y>30</y>
       <width>391</width>
-      <height>22</height>
+      <height>20</height>
      </rect>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="text">
+     <string>SVMC_sys_lam.bich_DOC_1716</string>
+    </property>
+    <property name="echoMode">
+     <enum>QLineEdit::Normal</enum>
     </property>
    </widget>
    <zorder>gb_options</zorder>
@@ -419,7 +428,7 @@ QGroupBox::title
    <zorder>label_version</zorder>
    <zorder>le_tag_name</zorder>
    <zorder>label_author</zorder>
-   <zorder>cb_wsp</zorder>
+   <zorder>le_wsp</zorder>
   </widget>
   <widget class="QGroupBox" name="gb_input">
    <property name="geometry">

@@ -13,6 +13,7 @@ from utils.p4helper import P4Helper, P4HelperException, P4InvalidDepotFileExcept
 from utils.cscexception import CSCException, CSCFailOperation
 from utils.xmlutils import XmlHelper, XmlHelperException
 from utils.logutils import Logging, log_error, log_info, log_notice, log_warning
+from utils.stringutils import isNotBlank
 
 SERVER = "localhost:1666"
 USER = "perforce"
@@ -22,7 +23,7 @@ BRANCH = "//depot/"
 
 UI_FILE = "ui\cscsearch.ui"
 ICON_FILE = "ui\cscsearch.png"
-VERSION = "0.04"
+VERSION = "0.05"
 
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
@@ -44,21 +45,26 @@ class CSCSearch(QDialog):
         self.settings.setValue('server', self.le_server.text())
         self.settings.setValue('user', self.le_user.text())
         self.settings.setValue('password', self.le_password.text())
-        clients = [self.cb_wsp.itemText(i) for i in range(self.cb_wsp.count())]
-        self.settings.setValue('wsp', clients)
+        self.settings.setValue('wsp', self.le_wsp.text())
         self.settings.setValue('branch', self.le_branch.text())
+        self.settings.setValue('tag_name', self.le_tag_name.text())
+        self.settings.setValue('tag_values', self.le_tag_values.text())
 
     def restoreSettings(self):
-        self.le_server.setText(self.settings.value('server'))
-        self.le_user.setText(self.settings.value('user'))
-        self.le_password.setText(self.settings.value('password'))
-        clients = self.settings.value('wsp')
-        if clients:
-            for client in clients:
-                if self.cb_wsp.findText(client) == -1:
-                    self.cb_wsp.addItem(client)
-        self.cb_wsp.setCurrentText(self.settings.value('wsp_default'))
-        self.le_branch.setText(self.settings.value('branch'))
+        if isNotBlank(self.settings.value('server')):
+            self.le_server.setText(self.settings.value('server'))
+        if isNotBlank(self.settings.value('user')):
+            self.le_user.setText(self.settings.value('user'))
+        if isNotBlank(self.settings.value('password')):
+            self.le_password.setText(self.settings.value('password'))
+        if isNotBlank(self.settings.value('wsp')):
+            self.le_wsp.setText(self.settings.value('wsp'))
+        if isNotBlank(self.settings.value('branch')):
+            self.le_branch.setText(self.settings.value('branch'))
+        if isNotBlank(self.settings.value('tag_name')):
+            self.le_tag_name.setText(self.settings.value('tag_name'))
+        if isNotBlank(self.settings.value('tag_values')):
+            self.le_tag_values.setText(self.settings.value('tag_values'))
 
     def setupOnChangedCallback(self):
         self.pb_go.clicked.connect(self.onConnectBtnClicked)
@@ -67,7 +73,7 @@ class CSCSearch(QDialog):
         self.le_tag_name.textChanged.connect(self.onTagNameChanged)
         self.le_tag_values.textChanged.connect(self.onTagValuesChanged)
         self.le_branch.textChanged.connect(self.onBranchChanged)
-        self.cb_wsp.currentIndexChanged.connect(self.onClientWorkspaceChanged)
+        self.le_wsp.textChanged.connect(self.onClientWorkspaceChanged)
 
     def processArgument(self):
         if len(sys.argv) > 1 and sys.argv[1] is not None:
@@ -108,7 +114,8 @@ class CSCSearch(QDialog):
         self.pb_search.setEnabled(False)
 
     def onClientWorkspaceChanged(self):
-        self.settings.setValue('wsp_default', self.cb_wsp.currentText())
+        self.cb_sale.clear()
+        self.pb_search.setEnabled(False)
 
     def validateInput(self):
         if not self.le_server.text():
@@ -120,6 +127,9 @@ class CSCSearch(QDialog):
             return False
         if not self.le_password.text():
             log_error("Password is empty, please specify password !")
+            return False
+        if not self.le_wsp.text():
+            log_error("Workspace is empty, please specify branch !")
             return False
         if not self.le_branch.text():
             log_error("Branch is empty, please specify branch !")
@@ -133,22 +143,16 @@ class CSCSearch(QDialog):
                 user_name = USER
                 password = PASSWORD
                 client = WORKSPACE
-                self.p4 = P4Helper(server, user_name, password, client)
             else:
                 server = self.le_server.text()
                 user_name = self.le_user.text()
                 password = self.le_password.text()
-                self.p4 = P4Helper(server, user_name, password)
+                client = self.le_wsp.text()
+            self.p4 = P4Helper(server, user_name, password, client)
         except P4HelperException as e:
             log_error(e)
             return False
         return True
-
-    def updateClientWorkspace(self):
-        clients = self.p4.getAllClientWorkspace()
-        for client in clients:
-            if self.cb_wsp.findText(client) == -1:
-                self.cb_wsp.addItem(client)
 
     def createClientWorkspace(self):
         clients = self.p4.getAllClientWorkspace()
@@ -198,15 +202,15 @@ class CSCSearch(QDialog):
         CSCSearch.infos = []  # clear dict
         self.te_message.clear()
         if self.validateInput() and self.connecToPerforce():
-            self.updateClientWorkspace()
             # self.createClientWorkspace() #TODO: Create client workspace automatically
             self.updateSale()
         QApplication.restoreOverrideCursor()
 
     def validateOptions(self):
         if not self.le_tag_name.text():
-            log_error("Tag is empty, please specify tag !")
+            log_error("Tag name is empty, please specify tag name !")
             return False
+        return True
 
     def isItemToWrite(self, value):
         tag_values = self.le_tag_values.text()
@@ -221,7 +225,7 @@ class CSCSearch(QDialog):
     def onSearchBtnClicked(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.te_message.clear()
-        if self.validateOptions:
+        if self.validateOptions():
             log_notice('Search is starting ...')
             CSCSearch.results = []
             tag = self.le_tag_name.text()
@@ -278,7 +282,7 @@ class CSCSearch(QDialog):
                     if self.isItemToWrite(result['value']) is True:
                         out.write('%s%s%s%s\n' % (tag.ljust(tag_ljust_size), result['sale'].ljust(sale_ljust_size), result['value'].ljust(value_ljust_size), result['file']))
             log_notice('Search is done. Output is written to %s and %s' % (csv_file, txt_file))
-            QApplication.restoreOverrideCursor()
+        QApplication.restoreOverrideCursor()
 
 
 if __name__ == '__main__':
