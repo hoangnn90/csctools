@@ -15,12 +15,6 @@ from utils.xmlutils import XmlHelper, XmlHelperException
 from utils.logutils import Logging, log_error, log_info, log_notice, log_warning
 from utils.stringutils import isNotBlank
 
-SERVER = "localhost:1666"
-USER = "perforce"
-PASSWORD = "perforce"
-WORKSPACE = "perforce_DESKTOP-6AAVS6M_7212"
-BRANCH = "//depot/"
-
 UI_FILE = "ui\cscsearch.ui"
 ICON_FILE = "ui\cscsearch.png"
 VERSION = "0.06"
@@ -33,7 +27,6 @@ def resource_path(relative_path):
 class CSCSearch(QDialog):
     infos = []  # dict contains csc and files in branch
     results = []  # dict contains search result
-    local_host = False
 
     def __init__(self):
         super(CSCSearch, self).__init__()
@@ -74,12 +67,7 @@ class CSCSearch(QDialog):
         self.le_tag_values.textChanged.connect(self.onTagValuesChanged)
         self.le_branch.textChanged.connect(self.onBranchChanged)
         self.le_wsp.textChanged.connect(self.onClientWorkspaceChanged)
-
-    def processArgument(self):
-        if len(sys.argv) > 1 and sys.argv[1] is not None:
-            print("argv1: %s" %(sys.argv[1]))
-            CSCSearch.local_host = True
-
+    
     def setupUI(self):
         myappid = 'mycompany.myproduct.subproduct.version'  # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
@@ -88,7 +76,6 @@ class CSCSearch(QDialog):
         self.label_version.setText(self.label_version.text() + VERSION)
         self.restoreSettings()
         self.setupOnChangedCallback()
-        self.processArgument()
 
     def setupLog(self):
         sys.stdout = Logging(newText=self.onLogChanged)
@@ -138,16 +125,10 @@ class CSCSearch(QDialog):
 
     def connecToPerforce(self):
         try:
-            if CSCSearch.local_host:
-                server = SERVER
-                user_name = USER
-                password = PASSWORD
-                client = WORKSPACE
-            else:
-                server = self.le_server.text()
-                user_name = self.le_user.text()
-                password = self.le_password.text()
-                client = self.le_wsp.text()
+            server = self.le_server.text()
+            user_name = self.le_user.text()
+            password = self.le_password.text()
+            client = self.le_wsp.text()
             self.p4 = P4Helper(server, user_name, password, client)
         except P4HelperException as e:
             log_error(e)
@@ -170,10 +151,7 @@ class CSCSearch(QDialog):
     def updateSale(self):
         CSCSearch.infos.clear()
         sales = []
-        if CSCSearch.local_host:
-            branch = BRANCH
-        else:
-            branch = self.le_branch.text()
+        branch = self.le_branch.text()
         files = []
         try:
             files = self.p4.getAllDepotFile(branch)
