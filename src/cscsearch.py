@@ -1,7 +1,7 @@
 import os
 from PyQt5 import uic
 from PyQt5.QtGui import QIcon, QTextCursor
-from PyQt5.QtCore import QSettings, Qt
+from PyQt5.QtCore import QSettings, Qt, QCoreApplication
 from PyQt5.QtWidgets import QApplication, QDialog
 import sys
 import ctypes
@@ -9,30 +9,80 @@ import operator
 import csv
 import time
 import subprocess
+from enum import Enum
 from utils.p4helper import P4Helper, P4HelperException, P4InvalidDepotFileException, P4FailedToSyncException
 from utils.cscexception import CSCException, CSCFailOperation
 from utils.xmlutils import XmlHelper, XmlHelperException
 from utils.logutils import Logging, log_error, log_info, log_notice, log_warning
 from utils.stringutils import isNotBlank
 
-UI_FILE = "ui\cscsearch.ui"
+UI_MAIN_WINDOW = "ui\cscsearch.ui"
+UI_OPEN_RESULT_DIALOG = "ui\cscsearch_open_file_dialog.ui"
 ICON_FILE = "ui\cscsearch.png"
-VERSION = "0.06"
+VERSION = "0.07"
 
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
 
+class OpenFileType(Enum):
+    TXT='txt'
+    CSV='csv'
+    SHOW_FOLDER='show_folder'
+
+class OpenFileDialog(QDialog):
+    def __init__(self, parent):
+        super(OpenFileDialog, self).__init__()
+        self.settings = QSettings('csctools', 'cscsearch_open_result_dialog')
+        self.setupUI()
+        self.parent=parent
+    
+    def closeEvent(self, event):
+        self.parent.settings.setValue('do_not_show_cb', self.cb_do_not_show.isChecked())
+
+    def setupUI(self):
+        uic.loadUi(resource_path(UI_OPEN_RESULT_DIALOG), self)
+        self.setWindowIcon(QIcon(resource_path(ICON_FILE)))
+        self.setWindowTitle("Open result files")
+        self.rb_txt.setChecked(True)
+        self.setupOnChangedCallback()
+
+    def setupOnChangedCallback(self):
+        self.pb_ok.clicked.connect(self.onOKBtnClicked)
+        self.pb_cancel.clicked.connect(self.onCancelBtnClicked)
+    
+    def getOpenFileType(self):
+        file_type = None
+        if self.rb_txt.isChecked():
+            file_type=OpenFileType.TXT
+        if self.rb_csv.isChecked():
+            file_type=OpenFileType.CSV
+        if self.rb_show.isChecked():
+            file_type=OpenFileType.SHOW_FOLDER
+        return file_type
+
+    def onOKBtnClicked(self):
+        file_type = self.getOpenFileType()
+        if file_type is None:
+            log_error("Please choose file type to open")
+        else:
+            os.startfile(self.parent.result_files[file_type])
+        self.close()
+    
+    def onCancelBtnClicked(self):
+        self.close()
+
 class CSCSearch(QDialog):
     infos = []  # dict contains csc and files in branch
     results = []  # dict contains search result
-
+    result_files = {}
     def __init__(self):
         super(CSCSearch, self).__init__()
         self.settings = QSettings('csctools', 'cscsearch')
         self.setupUI()
         self.setupLog()
+        self.open_file_dialog = OpenFileDialog(parent=self)
 
     def closeEvent(self, event):
         self.settings.setValue('server', self.le_server.text())
@@ -56,8 +106,7 @@ class CSCSearch(QDialog):
             self.le_branch.setText(self.settings.value('branch'))
         if isNotBlank(self.settings.value('tag_name')):
             self.le_tag_name.setText(self.settings.value('tag_name'))
-        if isNotBlank(self.settings.value('tag_values')):
-            self.le_tag_values.setText(self.settings.value('tag_values'))
+        self.le_tag_values.setText(self.settings.value('tag_values'))
 
     def setupOnChangedCallback(self):
         self.pb_go.clicked.connect(self.onConnectBtnClicked)
@@ -71,7 +120,7 @@ class CSCSearch(QDialog):
     def setupUI(self):
         myappid = 'mycompany.myproduct.subproduct.version'  # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-        uic.loadUi(resource_path(UI_FILE), self)
+        uic.loadUi(resource_path(UI_MAIN_WINDOW), self)
         self.setWindowIcon(QIcon(resource_path(ICON_FILE)))
         self.label_version.setText(self.label_version.text() + VERSION)
         self.restoreSettings()
@@ -89,12 +138,15 @@ class CSCSearch(QDialog):
 
     def onSaleCodeChanged(self):
         self.te_message.clear()
+        self.te_result.clear()
 
     def onTagNameChanged(self):
         self.te_message.clear()
+        self.te_result.clear()
     
     def onTagValuesChanged(self):
         self.te_message.clear()
+        self.te_result.clear()
 
     def onBranchChanged(self):
         self.cb_sale.clear()
@@ -177,6 +229,7 @@ class CSCSearch(QDialog):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         CSCSearch.infos = []  # clear dict
         self.te_message.clear()
+        self.te_result.clear()
         if self.validateInput() and self.connecToPerforce():
             # self.createClientWorkspace() #TODO: Create client workspace automatically
             self.updateSale()
@@ -201,9 +254,10 @@ class CSCSearch(QDialog):
     def onSearchBtnClicked(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.te_message.clear()
+        self.te_result.clear()
         if self.validateOptions():
             log_notice('Search is starting ...')
-            CSCSearch.results = []
+            self.results = []
             tag = self.le_tag_name.text()
             sale = self.cb_sale.currentText()
             for info in CSCSearch.infos:
@@ -229,41 +283,54 @@ class CSCSearch(QDialog):
                             for tag_value in tag_values:
                                 result = info.copy()  # copy sale and file values to result
                                 result['value'] = tag_value
-                                CSCSearch.results.append(result)
+                                self.results.append(result)
                         else:
                             result = info.copy()
                             result['value'] = '-'
-                            CSCSearch.results.append(result)
-            # CSCSearch.results.sort(key=operator.itemgetter('sale'))
-            # print(CSCSearch.results)
+                            self.results.append(result)
+            # self.results.sort(key=operator.itemgetter('sale'))
+            # print(self.results)
 
+            cwd = os.getcwd()
+            self.result_files[OpenFileType.SHOW_FOLDER] = cwd
             # Write to csv file
-            csv_file = '{}{}'.format(time.strftime("%Y%m%d-%H%M%S"), '.csv')
+            csv_file = '{}\{}{}'.format(cwd, time.strftime("%Y%m%d-%H%M%S"), '.csv')
             with open(csv_file, 'w', newline='') as out:
                 fields = ['tag', 'sale', 'value', 'file']
                 writer = csv.DictWriter(out, fields)
                 writer.writeheader()
-                for result in CSCSearch.results:
+                for result in self.results:
                     if self.isItemToWrite(result['value']) is True:
                         writer.writerow({'tag' : tag, 'sale' : result['sale'], 'value' : result['value'], 'file' : result['file']})
-
+            
+            self.result_files[OpenFileType.CSV] = csv_file
             # Write to txt file
-            txt_file = '{}{}'.format(time.strftime("%Y%m%d-%H%M%S"), '.txt')
+            txt_file = '{}\{}{}'.format(cwd, time.strftime("%Y%m%d-%H%M%S"), '.txt')
             tag_ljust_size = len(tag) + 4
             sale_ljust_size = 8
             value_ljust_size = 5
-            for result in CSCSearch.results:
+            for result in self.results:
                 if value_ljust_size < len(result['value']):
                     value_ljust_size = len(result['value'])
             value_ljust_size = value_ljust_size + 4
             with open(txt_file, 'w') as out:
                 out.write('%s%s%s%s\n' % ('tag'.ljust(tag_ljust_size), 'sale'.ljust(sale_ljust_size), 'value'.ljust(value_ljust_size), 'file'))
-                for result in CSCSearch.results:
+                for result in self.results:
                     if self.isItemToWrite(result['value']) is True:
                         out.write('%s%s%s%s\n' % (tag.ljust(tag_ljust_size), result['sale'].ljust(sale_ljust_size), result['value'].ljust(value_ljust_size), result['file']))
-            log_notice('Search is done. Output is written to %s and %s' % (csv_file, txt_file))
+            self.result_files[OpenFileType.TXT] = txt_file
+            # Print result
+            f = open(txt_file, "r")
+            self.te_result.setText(f.read())
+
+            log_notice('Output is written to %s and %s' % (csv_file, txt_file))
+            log_notice('Search is finished')
         QApplication.restoreOverrideCursor()
 
+        # Show open file dialog
+        do_not_show_cb_setting = self.settings.value('do_not_show_cb')
+        if do_not_show_cb_setting is None or do_not_show_cb_setting == 'false':
+            self.open_file_dialog.show()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
