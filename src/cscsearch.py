@@ -1,5 +1,5 @@
 import os
-from PyQt5 import uic
+from PyQt5 import uic, QtCore, QtGui, QtCore, QtWidgets
 from PyQt5.QtGui import QIcon, QTextCursor
 from PyQt5.QtCore import QSettings, Qt, QCoreApplication
 from PyQt5.QtWidgets import QApplication, QDialog
@@ -9,6 +9,7 @@ import operator
 import csv
 import time
 import subprocess
+from threading import Thread
 from enum import Enum
 from utils.p4helper import P4Helper, P4HelperException, P4InvalidDepotFileException, P4FailedToSyncException
 from utils.cscexception import CSCException, CSCFailOperation
@@ -19,7 +20,7 @@ from utils.stringutils import isNotBlank
 UI_MAIN_WINDOW = "ui\cscsearch.ui"
 UI_OPEN_RESULT_DIALOG = "ui\cscsearch_open_file_dialog.ui"
 ICON_FILE = "ui\cscsearch.png"
-VERSION = "0.07"
+VERSION = "0.08"
 
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
@@ -139,14 +140,17 @@ class CSCSearch(QDialog):
     def onSaleCodeChanged(self):
         self.te_message.clear()
         self.te_result.clear()
+        self.open_file_dialog.close()
 
     def onTagNameChanged(self):
         self.te_message.clear()
         self.te_result.clear()
+        self.open_file_dialog.close()
     
     def onTagValuesChanged(self):
         self.te_message.clear()
         self.te_result.clear()
+        self.open_file_dialog.close()
 
     def onBranchChanged(self):
         self.cb_sale.clear()
@@ -201,38 +205,39 @@ class CSCSearch(QDialog):
             # subprocess.call(cmd_set)
 
     def updateSale(self):
-        CSCSearch.infos.clear()
         sales = []
         branch = self.le_branch.text()
-        files = []
+        branchs = []
         try:
-            files = self.p4.getAllDepotFile(branch)
+            branchs = self.p4.getAllDepotBranch(branch)
         except P4HelperException as e:
             log_error(e)
             return
-        for f in files:
-            sale = self.p4.getSaleCodeFromBranch(f)
+        for b in branchs:
+            sale = self.p4.getSaleCodeFromBranch(b)
             if sale is not None:
-                info = {'file': f, 'sale':sale}
-                CSCSearch.infos.append(info)  # add sale and file to dict
                 sales.append(sale)
+        sales = set(sales)
+        for sale in sales:
                 if self.cb_sale.findText(sale) == -1:
                     self.cb_sale.addItem(sale)
                     self.pb_search.setEnabled(True)
-        sales = set(sales)
         if len(sales) >= 2 and self.cb_sale.findText('All') == -1:
             self.cb_sale.insertItem(0, 'All')
+            self.cb_sale.setCurrentIndex(0)
         if len(sales) == 0:
             log_error("Could not find any file in branch '%s'" % (branch))
 
     def onConnectBtnClicked(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
-        CSCSearch.infos = []  # clear dict
         self.te_message.clear()
         self.te_result.clear()
+        self.open_file_dialog.close()
         if self.validateInput() and self.connecToPerforce():
             # self.createClientWorkspace() #TODO: Create client workspace automatically
-            self.updateSale()
+            update_sale_thread = Thread(target=self.updateSale)
+            update_sale_thread.start()
+            update_sale_thread.join()
         QApplication.restoreOverrideCursor()
 
     def validateOptions(self):
@@ -251,79 +256,93 @@ class CSCSearch(QDialog):
                 return True
         return False
 
+    def searchResult(self):
+        CSCSearch.infos.clear()
+        files = []
+        try:
+            files = self.p4.getAllDepotFile(self.le_branch.text())
+        except P4HelperException as e:
+            log_error(e)
+            return
+        for f in files:
+            sale = self.p4.getSaleCodeFromBranch(f)
+            info = {'file': f, 'sale' : sale}
+            CSCSearch.infos.append(info)
+        self.results = []
+        tag = self.le_tag_name.text()
+        sale = self.cb_sale.currentText()
+        for info in CSCSearch.infos:
+            if (sale == 'All') or (sale != 'All' and info['sale'] == sale):
+                depot_file = info['file']
+                local_file = ''
+                try:
+                    self.p4.syncP4File(depot_file)
+                    local_file = self.p4.getLocalFilePath(depot_file)
+                except P4FailedToSyncException as e:
+                    pass
+                except P4HelperException as e:
+                    log_error(e)
+                    return
+                if os.path.isfile(local_file):  # Fix file that deleted from server but 'p4 files' cmd still get it
+                    try:
+                        helper = XmlHelper(local_file)
+                    except XmlHelperException as e:
+                        log_warning(e)
+                        continue
+                    tag_values = helper.getTagContents(local_file, tag)
+                    if tag_values:
+                        for tag_value in tag_values:
+                            result = info.copy()  # copy sale and file values to result
+                            result['value'] = tag_value
+                            self.results.append(result)
+                    else:
+                        result = info.copy()
+                        result['value'] = '-'
+                        self.results.append(result)
+        # self.results.sort(key=operator.itemgetter('sale'))
+        # print(self.results)
+
+        cwd = os.getcwd()
+        self.result_files[OpenFileType.SHOW_FOLDER] = cwd
+        # Write to csv file
+        csv_file = '{}\{}{}'.format(cwd, time.strftime("%Y%m%d-%H%M%S"), '.csv')
+        with open(csv_file, 'w', newline='') as out:
+            fields = ['tag', 'sale', 'value', 'file']
+            writer = csv.DictWriter(out, fields)
+            writer.writeheader()
+            for result in self.results:
+                if self.isItemToWrite(result['value']) is True:
+                    writer.writerow({'tag' : tag, 'sale' : result['sale'], 'value' : result['value'], 'file' : result['file']})
+        
+        self.result_files[OpenFileType.CSV] = csv_file
+        # Write to txt file
+        txt_file = '{}\{}{}'.format(cwd, time.strftime("%Y%m%d-%H%M%S"), '.txt')
+        tag_ljust_size = len(tag) + 4
+        sale_ljust_size = 8
+        value_ljust_size = 5
+        for result in self.results:
+            if value_ljust_size < len(result['value']):
+                value_ljust_size = len(result['value'])
+        value_ljust_size = value_ljust_size + 4
+        with open(txt_file, 'w') as out:
+            out.write('%s%s%s%s\n' % ('tag'.ljust(tag_ljust_size), 'sale'.ljust(sale_ljust_size), 'value'.ljust(value_ljust_size), 'file'))
+            for result in self.results:
+                if self.isItemToWrite(result['value']) is True:
+                    out.write('%s%s%s%s\n' % (tag.ljust(tag_ljust_size), result['sale'].ljust(sale_ljust_size), result['value'].ljust(value_ljust_size), result['file']))
+        self.result_files[OpenFileType.TXT] = txt_file
+        # Print result
+        f = open(txt_file, "r")
+        self.te_result.setText(f.read())
+        log_notice('Output is written to %s and %s' % (csv_file, txt_file))
+
     def onSearchBtnClicked(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.te_message.clear()
         self.te_result.clear()
+        self.open_file_dialog.close()
         if self.validateOptions():
             log_notice('Search is starting ...')
-            self.results = []
-            tag = self.le_tag_name.text()
-            sale = self.cb_sale.currentText()
-            for info in CSCSearch.infos:
-                if (sale == 'All') or (sale != 'All' and info['sale'] == sale):
-                    depot_file = info['file']
-                    local_file = ''
-                    try:
-                        self.p4.syncP4File(depot_file)
-                        local_file = self.p4.getLocalFilePath(depot_file)
-                    except P4FailedToSyncException as e:
-                        pass
-                    except P4HelperException as e:
-                        log_error(e)
-                        return
-                    if os.path.isfile(local_file):  # Fix file that deleted from server but 'p4 files' cmd still get it
-                        try:
-                            helper = XmlHelper(local_file)
-                        except XmlHelperException as e:
-                            log_warning(e)
-                            continue
-                        tag_values = helper.getTagContents(local_file, tag)
-                        if tag_values:
-                            for tag_value in tag_values:
-                                result = info.copy()  # copy sale and file values to result
-                                result['value'] = tag_value
-                                self.results.append(result)
-                        else:
-                            result = info.copy()
-                            result['value'] = '-'
-                            self.results.append(result)
-            # self.results.sort(key=operator.itemgetter('sale'))
-            # print(self.results)
-
-            cwd = os.getcwd()
-            self.result_files[OpenFileType.SHOW_FOLDER] = cwd
-            # Write to csv file
-            csv_file = '{}\{}{}'.format(cwd, time.strftime("%Y%m%d-%H%M%S"), '.csv')
-            with open(csv_file, 'w', newline='') as out:
-                fields = ['tag', 'sale', 'value', 'file']
-                writer = csv.DictWriter(out, fields)
-                writer.writeheader()
-                for result in self.results:
-                    if self.isItemToWrite(result['value']) is True:
-                        writer.writerow({'tag' : tag, 'sale' : result['sale'], 'value' : result['value'], 'file' : result['file']})
-            
-            self.result_files[OpenFileType.CSV] = csv_file
-            # Write to txt file
-            txt_file = '{}\{}{}'.format(cwd, time.strftime("%Y%m%d-%H%M%S"), '.txt')
-            tag_ljust_size = len(tag) + 4
-            sale_ljust_size = 8
-            value_ljust_size = 5
-            for result in self.results:
-                if value_ljust_size < len(result['value']):
-                    value_ljust_size = len(result['value'])
-            value_ljust_size = value_ljust_size + 4
-            with open(txt_file, 'w') as out:
-                out.write('%s%s%s%s\n' % ('tag'.ljust(tag_ljust_size), 'sale'.ljust(sale_ljust_size), 'value'.ljust(value_ljust_size), 'file'))
-                for result in self.results:
-                    if self.isItemToWrite(result['value']) is True:
-                        out.write('%s%s%s%s\n' % (tag.ljust(tag_ljust_size), result['sale'].ljust(sale_ljust_size), result['value'].ljust(value_ljust_size), result['file']))
-            self.result_files[OpenFileType.TXT] = txt_file
-            # Print result
-            f = open(txt_file, "r")
-            self.te_result.setText(f.read())
-
-            log_notice('Output is written to %s and %s' % (csv_file, txt_file))
+            self.searchResult()
             log_notice('Search is finished')
         QApplication.restoreOverrideCursor()
 
