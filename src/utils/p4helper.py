@@ -5,7 +5,7 @@ from P4 import P4, P4Exception
 from p4swamp import p4, P4Error
 
 from utils import logutils, const
-
+from utils.salecode import sales
 
 class P4HelperException(Exception):
     def __init__(self, message):
@@ -64,9 +64,9 @@ class P4Helper:
     def getSaleCodeFromBranch(self, branch):
         """Get sale code from branch name
         """
-        for i in range(len(const.sales)):
-            if const.sales[i] in branch:
-                return const.sales[i]
+        for i in range(len(sales)):
+            if sales[i] in branch:
+                return sales[i]
         return None
 
     def getFileNameFromPath(self, file):

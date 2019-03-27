@@ -59,11 +59,11 @@ Link: <https://cdist2.perforce.com/perforce/r18.2/bin.ntx64/helix-core-server-x6
   + Enter below cmd:
     + Without compress
     ```cmd
-    pyinstaller --debug --clean --onefile --nowindowed --add-data "./ui/cscsearch.png;./ui" --add-data "./ui/cscsearch.ui;./ui" cscsearch.py
+    pyinstaller --debug --clean --onefile --nowindowed --add-data "./ui/cscsearch.png;./ui" --add-data "./ui/cscsearch.ui;./ui" --add-data "./ui/cscsearch_open_file_dialog.ui;./ui" cscsearch.py
     ```
     + With compress
     ```cmd
-    pyinstaller --debug --clean --onefile --nowindowed --upx-dir G:\working\CSCTool\tools\upx-3.95-win64\upx-3.95-win64 --add-data "./ui/cscsearch.png;./ui" --add-data "./ui/cscsearch.ui;./ui" cscsearch.py
+    pyinstaller --debug --clean --onefile --nowindowed --upx-dir G:\working\CSCTool\tools\upx-3.95-win64\upx-3.95-win64 --add-data "./ui/cscsearch.png;./ui" --add-data "./ui/cscsearch.ui;./ui" --add-data "./ui/cscsearch_open_file_dialog.ui;./ui" cscsearch.py
     ```
 
 # 4. Run & Debug

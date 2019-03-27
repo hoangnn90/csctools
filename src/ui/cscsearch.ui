@@ -501,6 +501,7 @@ QGroupBox::title
      </widget>
     </widget>
    </widget>
+   <zorder>gb_log</zorder>
    <zorder>gb_options</zorder>
    <zorder>label_server</zorder>
    <zorder>pb_search</zorder>
@@ -522,7 +523,6 @@ QGroupBox::title
    <zorder>le_tag_name</zorder>
    <zorder>label_author</zorder>
    <zorder>le_wsp</zorder>
-   <zorder>gb_log</zorder>
    <zorder>gb_result</zorder>
   </widget>
   <widget class="QGroupBox" name="gb_input">

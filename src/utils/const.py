@@ -9,18 +9,6 @@ condition_rule = "Condition"
 unusedtag_rule = "UnUsedTag"
 profilehandle_rule = "ProfileHandle"
 
-sales = [
-    'GLB', 'XME' , 'SMA', 'XTC', # Malaysia
-    'SIN', 'STH', 'MM1', 'XSP', #Singapore
-    'XEV', 'XXV',  # Vietnam
-    'TEL', # Australia
-    'XNZ', 'VNZ', 'TNZ', #NewZealand
-    'LAO' , # Lao
-    'CAM', 'MYM', # Combodia
-    'THL', 'AIS', 'TRM', # Thailand
-    'XID' , # Indonesia
-    ]
-
 customer = "customer.xml"
 csc_feature = "csc_feature.xml"
 csc_feature_network = "csc_feature_network.xml"
