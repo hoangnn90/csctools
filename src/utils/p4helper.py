@@ -64,9 +64,11 @@ class P4Helper:
     def getSaleCodeFromBranch(self, branch):
         """Get sale code from branch name
         """
+        values = branch.split('/')
         for i in range(len(sales)):
-            if sales[i] in branch:
-                return sales[i]
+            for value in values:
+                if sales[i] == value:
+                    return sales[i]
         return None
 
     def getFileNameFromPath(self, file):
