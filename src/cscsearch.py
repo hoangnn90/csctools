@@ -21,6 +21,7 @@ UI_MAIN_WINDOW = "ui\cscsearch.ui"
 UI_OPEN_RESULT_DIALOG = "ui\cscsearch_open_file_dialog.ui"
 ICON_FILE = "ui\cscsearch.png"
 VERSION = "0.08"
+EXTENSIONS = ['.xml']
 
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
@@ -218,7 +219,7 @@ class CSCSearch(QDialog):
             if sale is not None:
                 sales.append(sale)
         sales = set(sales)
-        for sale in sales:
+        for sale in sorted(sales):
                 if self.cb_sale.findText(sale) == -1:
                     self.cb_sale.addItem(sale)
                     self.pb_search.setEnabled(True)
@@ -256,22 +257,34 @@ class CSCSearch(QDialog):
                 return True
         return False
 
-    def searchResult(self):
-        CSCSearch.infos.clear()
+    def isCorrectFileExtension(self, file, extensions):
+        if not file:
+            return False
+        for ext in extensions:
+            extension = os.path.splitext(file)[1]
+            if extension == ext:
+                return True
+        return False
+
+    def getFilesInBranch(self, branch, extensions, infos):
         files = []
         try:
-            files = self.p4.getAllDepotFile(self.le_branch.text())
+            files = self.p4.getAllDepotFile(branch)
         except P4HelperException as e:
             log_error(e)
             return
         for f in files:
-            sale = self.p4.getSaleCodeFromBranch(f)
-            info = {'file': f, 'sale' : sale}
-            CSCSearch.infos.append(info)
-        self.results = []
+            if self.isCorrectFileExtension(f, extensions) is True:
+                sale = self.p4.getSaleCodeFromBranch(f)
+                if sale is not None:
+                    info = {'file': f, 'sale' : sale}
+                    infos.append(info)
+        return infos
+
+    def getResult(self, infos, results):
         tag = self.le_tag_name.text()
         sale = self.cb_sale.currentText()
-        for info in CSCSearch.infos:
+        for info in infos:
             if (sale == 'All') or (sale != 'All' and info['sale'] == sale):
                 depot_file = info['file']
                 local_file = ''
@@ -294,46 +307,45 @@ class CSCSearch(QDialog):
                         for tag_value in tag_values:
                             result = info.copy()  # copy sale and file values to result
                             result['value'] = tag_value
-                            self.results.append(result)
+                            results.append(result)
                     else:
                         result = info.copy()
                         result['value'] = '-'
-                        self.results.append(result)
-        # self.results.sort(key=operator.itemgetter('sale'))
-        # print(self.results)
+                        results.append(result)
+        # results.sort(key=operator.itemgetter('sale'))
+        # print(results)
+        return results
 
+    def writeOutput(self, results, result_files):
+        tag = self.le_tag_name.text()
         cwd = os.getcwd()
-        self.result_files[OpenFileType.SHOW_FOLDER] = cwd
+        result_files[OpenFileType.SHOW_FOLDER] = cwd
         # Write to csv file
         csv_file = '{}\{}{}'.format(cwd, time.strftime("%Y%m%d-%H%M%S"), '.csv')
         with open(csv_file, 'w', newline='') as out:
             fields = ['tag', 'sale', 'value', 'file']
             writer = csv.DictWriter(out, fields)
             writer.writeheader()
-            for result in self.results:
+            for result in results:
                 if self.isItemToWrite(result['value']) is True:
                     writer.writerow({'tag' : tag, 'sale' : result['sale'], 'value' : result['value'], 'file' : result['file']})
-        
-        self.result_files[OpenFileType.CSV] = csv_file
+        result_files[OpenFileType.CSV] = csv_file
         # Write to txt file
         txt_file = '{}\{}{}'.format(cwd, time.strftime("%Y%m%d-%H%M%S"), '.txt')
         tag_ljust_size = len(tag) + 4
         sale_ljust_size = 8
         value_ljust_size = 5
-        for result in self.results:
+        for result in results:
             if value_ljust_size < len(result['value']):
                 value_ljust_size = len(result['value'])
         value_ljust_size = value_ljust_size + 4
         with open(txt_file, 'w') as out:
             out.write('%s%s%s%s\n' % ('tag'.ljust(tag_ljust_size), 'sale'.ljust(sale_ljust_size), 'value'.ljust(value_ljust_size), 'file'))
-            for result in self.results:
+            for result in results:
                 if self.isItemToWrite(result['value']) is True:
+                    # print("tag: %s, value %s, sale %s\n" %(tag, result['value'], result['sale']))
                     out.write('%s%s%s%s\n' % (tag.ljust(tag_ljust_size), result['sale'].ljust(sale_ljust_size), result['value'].ljust(value_ljust_size), result['file']))
-        self.result_files[OpenFileType.TXT] = txt_file
-        # Print result
-        f = open(txt_file, "r")
-        self.te_result.setText(f.read())
-        log_notice('Output is written to %s and %s' % (csv_file, txt_file))
+        result_files[OpenFileType.TXT] = txt_file
 
     def onSearchBtnClicked(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
@@ -341,9 +353,32 @@ class CSCSearch(QDialog):
         self.te_result.clear()
         self.open_file_dialog.close()
         if self.validateOptions():
-            log_notice('Search is starting ...')
-            self.searchResult()
-            log_notice('Search is finished')
+            # log_notice('Search is starting ...')
+            infos = []
+            find_file_thread = Thread(target=self.getFilesInBranch, args=(self.le_branch.text(), EXTENSIONS, infos))
+            find_file_thread.start()
+            find_file_thread.join()
+            CSCSearch.infos = infos
+            log_notice("Infos:")
+            log_notice(CSCSearch.infos)
+            results = []
+            get_result_thread = Thread(target=self.getResult, args=(CSCSearch.infos, results))
+            get_result_thread.start()
+            get_result_thread.join()
+            CSCSearch.results = results
+            # log_notice("Results:")
+            # log_notice(CSCSearch.results)
+            # log_notice('Writing result to file ...')
+            write_output_thread = Thread(target=self.writeOutput, args=(CSCSearch.results, CSCSearch.result_files))
+            write_output_thread.start()
+            write_output_thread.join()
+            # log_notice("Result files:")
+            # log_notice(CSCSearch.result_files)
+            # Print result
+            f = open(CSCSearch.result_files[OpenFileType.TXT], "r")
+            self.te_result.setText(f.read())
+            log_notice('Output is written to %s and %s' % (CSCSearch.result_files[OpenFileType.CSV], CSCSearch.result_files[OpenFileType.TXT]))
+            # log_notice('Search is finished')
         QApplication.restoreOverrideCursor()
 
         # Show open file dialog
