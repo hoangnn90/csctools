@@ -95,6 +95,7 @@ class XmlHelper(LineNumberingParser):
         for e in tree.iter():
             if e.tag == tag:
                 contents.append(e.text)
+        contents = set(contents)
         return contents
 
     def countTag(self, file, tag):
