@@ -2,7 +2,7 @@ import os
 from PyQt5 import uic, QtCore, QtGui, QtCore, QtWidgets
 from PyQt5.QtGui import QIcon, QTextCursor
 from PyQt5.QtCore import QSettings, Qt, QCoreApplication
-from PyQt5.QtWidgets import QApplication, QDialog
+from PyQt5.QtWidgets import QApplication, QDialog, QMainWindow
 import sys
 import ctypes
 import operator
@@ -75,7 +75,7 @@ class OpenFileDialog(QDialog):
     def onCancelBtnClicked(self):
         self.close()
 
-class CSCSearch(QDialog):
+class CSCSearch(QMainWindow):
     infos = []  # dict contains csc and files in branch
     results = []  # dict contains search result
     result_files = {}
