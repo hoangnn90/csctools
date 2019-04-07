@@ -40,8 +40,8 @@ class P4Helper:
         # self.p4.client = client
         try:
             self.p4.connect()
-        except P4Exception as e:
-            raise P4ConnectionErrorException("Failed to connect to perfore server %s with user %s" % (self.p4.port, self.p4.user))
+        except P4Exception:
+            raise P4ConnectionErrorException("Failed to connect to perfore server %s with user %s, error %s" % (self.p4.port, self.p4.user, self.p4.errors))
 
     def __del__(self):
         if self.p4.connected() is True:
@@ -55,8 +55,8 @@ class P4Helper:
                 dicts = self.p4.run("clients")
             else:
                 dicts = self.p4.run("clients", options)
-        except P4Exception as e:
-            raise P4FailedToGetClientWorkspace("Failed to get client workspace, error code %s" %(str(e)))
+        except P4Exception:
+            raise P4FailedToGetClientWorkspace("Failed to get client workspace, error %s" %(self.p4.errors))
         for d in dicts:
             clients.append(d['client'])
         return clients
@@ -95,7 +95,7 @@ class P4Helper:
             try:
                 dirs = self.p4.run("dirs", dir + '*')
             except P4Exception:
-                raise P4HelperException("Could not find branch %s in depot" %(branch))    
+                raise P4HelperException("Could not find branch %s in depot, error %s" %(branch, self.p4.errors))
             for subdir in dirs:
                 mqueue.put(str(subdir["dir"] + "/"))
         return branchs
@@ -138,8 +138,8 @@ class P4Helper:
                 local_path = file_infos[0]["path"]
                 # logutils.log_info("local_path: %s" %(local_path))
                 return local_path
-            except P4Error as e:
-                raise P4FailedToGetLocalPath("Could not find local path of %s. Error: %s " %(depot_file, str(e)))
+            except P4Error:
+                raise P4FailedToGetLocalPath("Could not find local path of %s. Error: %s " %(depot_file, self.p4.errors))
         else:
             raise P4InvalidDepotFileException("File %s is not existed in depot" %(depot_file))
             
@@ -152,8 +152,8 @@ class P4Helper:
         if self.isDepotFile(depot_file) is True:
             try:
                 p4('sync', '-s', '-q', depot_file + '#head')
-            except P4Error as e:
-                raise P4FailedToSyncException("Failed to sync '%s' with error %s" % (depot_file, str(e)))
+            except P4Error:
+                raise P4FailedToSyncException("Failed to sync '%s' with error %s" % (depot_file, self.p4.errors))
         else:
             raise P4InvalidDepotFileException("File '%s' is not existed in depot" % (depot_file))
     
