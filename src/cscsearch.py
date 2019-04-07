@@ -87,6 +87,7 @@ class CSCSearch(QMainWindow):
         self.open_file_dialog = OpenFileDialog(parent=self)
 
     def closeEvent(self, event):
+        self.open_file_dialog.close()
         self.settings.setValue('server', self.le_server.text())
         self.settings.setValue('user', self.le_user.text())
         self.settings.setValue('password', self.le_password.text())
