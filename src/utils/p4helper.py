@@ -40,6 +40,7 @@ class P4Helper:
         # self.p4.client = client
         try:
             self.p4.connect()
+            self.p4.run_login()
         except P4Exception:
             raise P4ConnectionErrorException("Failed to connect to perfore server %s with user %s, error %s" % (self.p4.port, self.p4.user, self.p4.errors))
 
