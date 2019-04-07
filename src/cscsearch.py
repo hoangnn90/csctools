@@ -234,11 +234,15 @@ class CSCSearch(QMainWindow):
         self.te_message.clear()
         self.te_result.clear()
         self.open_file_dialog.close()
-        if self.validateInput() and self.connecToPerforce():
-            # self.createClientWorkspace() #TODO: Create client workspace automatically
-            update_sale_thread = Thread(target=self.updateSale)
-            update_sale_thread.start()
-            update_sale_thread.join()
+        if self.validateInput():
+            try:
+                self.connecToPerforce()
+                # self.createClientWorkspace() #TODO: Create client workspace automatically
+                update_sale_thread = Thread(target=self.updateSale)
+                update_sale_thread.start()
+                update_sale_thread.join()
+            except P4HelperException as e:
+                log_error(str(e))
         QApplication.restoreOverrideCursor()
 
     def validateOptions(self):
