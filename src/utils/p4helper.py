@@ -7,6 +7,8 @@ from p4swamp import p4, P4Error
 from utils import logutils, const
 from utils.salecode import sales
 
+SALE_CODE_POSITION_IN_BRANCH = 8 #//PEACE_CSC/Strawberry/EXYNOS5/a50/OMC/OLM/XXV/
+
 class P4HelperException(Exception):
     def __init__(self, message):
         super(P4HelperException, self).__init__(message)
@@ -41,8 +43,8 @@ class P4Helper:
         try:
             self.p4.connect()
             self.p4.run_login()
-        except P4Exception:
-            raise P4ConnectionErrorException("Failed to connect to perfore server %s with user %s, error %s" % (self.p4.port, self.p4.user, self.p4.errors))
+        except P4Exception as e:
+            raise P4ConnectionErrorException("Failed to connect to perfore server %s with user %s, error %s" % (self.p4.port, self.p4.user, str(e)))
 
     def __del__(self):
         if self.p4.connected() is True:
@@ -56,8 +58,8 @@ class P4Helper:
                 dicts = self.p4.run("clients")
             else:
                 dicts = self.p4.run("clients", options)
-        except P4Exception:
-            raise P4FailedToGetClientWorkspace("Failed to get client workspace, error %s" %(self.p4.errors))
+        except P4Exception as e:
+            raise P4FailedToGetClientWorkspace("Failed to get client workspace, error %s" %(str(e)))
         for d in dicts:
             clients.append(d['client'])
         return clients
@@ -67,9 +69,8 @@ class P4Helper:
         """
         values = branch.split('/')
         for i in range(len(sales)):
-            for value in values:
-                if sales[i] == value:
-                    return sales[i]
+            if len(values) >= SALE_CODE_POSITION_IN_BRANCH+1 and sales[i] == values[SALE_CODE_POSITION_IN_BRANCH]:
+                return sales[i]
         return None
 
     def getFileNameFromPath(self, file):
@@ -139,8 +140,8 @@ class P4Helper:
                 local_path = file_infos[0]["path"]
                 # logutils.log_info("local_path: %s" %(local_path))
                 return local_path
-            except P4Error:
-                raise P4FailedToGetLocalPath("Could not find local path of %s. Error: %s " %(depot_file, self.p4.errors))
+            except P4Error as e:
+                raise P4FailedToGetLocalPath(" %s " %(str(e)))
         else:
             raise P4InvalidDepotFileException("File %s is not existed in depot" %(depot_file))
             
@@ -153,8 +154,8 @@ class P4Helper:
         if self.isDepotFile(depot_file) is True:
             try:
                 p4('sync', '-s', '-q', depot_file + '#head')
-            except P4Error:
-                raise P4FailedToSyncException("Failed to sync '%s' with error %s" % (depot_file, self.p4.errors))
+            except P4Error as e:
+                raise P4FailedToSyncException("Failed to sync '%s' with error %s" % (depot_file, str(e)))
         else:
             raise P4InvalidDepotFileException("File '%s' is not existed in depot" % (depot_file))
     
