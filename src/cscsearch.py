@@ -11,7 +11,7 @@ import time
 import subprocess
 from threading import Thread
 from enum import Enum
-from utils.p4helper import P4Helper, P4HelperException, P4InvalidDepotFileException, P4FailedToSyncException
+from utils.p4helper import P4Helper, P4HelperException, P4InvalidDepotFileException, P4FailedToSyncException, P4FailedToGetLocalPath
 from utils.cscexception import CSCException, CSCFailOperation
 from utils.xmlutils import XmlHelper, XmlHelperException
 from utils.logutils import Logging, log_error, log_info, log_notice, log_warning
@@ -297,10 +297,13 @@ class CSCSearch(QMainWindow):
                     self.p4.syncP4File(depot_file)
                     local_file = self.p4.getLocalFilePath(depot_file)
                 except P4FailedToSyncException as e:
-                    pass
-                except P4HelperException as e:
-                    log_error(e)
-                    return
+                    log_warning(str(e))
+                    continue
+                except P4InvalidDepotFileException as e:
+                    continue
+                except P4FailedToGetLocalPath as e:
+                    log_error(str(e))
+                    continue
                 if os.path.isfile(local_file):  # Fix file that deleted from server but 'p4 files' cmd still get it
                     try:
                         helper = XmlHelper(local_file)
@@ -364,32 +367,34 @@ class CSCSearch(QMainWindow):
             find_file_thread.start()
             find_file_thread.join()
             CSCSearch.infos = infos
-            log_notice("Infos:")
-            log_notice(CSCSearch.infos)
+            # log_notice("Infos:")
+            # log_notice(CSCSearch.infos)
             results = []
             get_result_thread = Thread(target=self.getResult, args=(CSCSearch.infos, results))
             get_result_thread.start()
             get_result_thread.join()
             CSCSearch.results = results
-            # log_notice("Results:")
-            # log_notice(CSCSearch.results)
-            # log_notice('Writing result to file ...')
-            write_output_thread = Thread(target=self.writeOutput, args=(CSCSearch.results, CSCSearch.result_files))
-            write_output_thread.start()
-            write_output_thread.join()
-            # log_notice("Result files:")
-            # log_notice(CSCSearch.result_files)
-            # Print result
-            f = open(CSCSearch.result_files[OpenFileType.TXT], "r")
-            self.te_result.setText(f.read())
-            log_notice('Output is written to %s and %s' % (CSCSearch.result_files[OpenFileType.CSV], CSCSearch.result_files[OpenFileType.TXT]))
-            # log_notice('Search is finished')
+            if results:
+                # log_notice('Writing result to file ...')
+                write_output_thread = Thread(target=self.writeOutput, args=(CSCSearch.results, CSCSearch.result_files))
+                write_output_thread.start()
+                write_output_thread.join()
+                # log_notice("Result files:")
+                # log_notice(CSCSearch.result_files)
+                # Print result
+                f = open(CSCSearch.result_files[OpenFileType.TXT], "r")
+                self.te_result.setText(f.read())
+                log_notice('Output is written to %s and %s' % (CSCSearch.result_files[OpenFileType.CSV], CSCSearch.result_files[OpenFileType.TXT]))
+                # log_notice('Search is finished')
+                # Show open file dialog
+                do_not_show_cb_setting = self.settings.value('do_not_show_cb')
+                if do_not_show_cb_setting is None or do_not_show_cb_setting == 'false':
+                    self.open_file_dialog.show()
+            else:
+                log_notice('Search is finished. Please check error message!')
         QApplication.restoreOverrideCursor()
 
-        # Show open file dialog
-        do_not_show_cb_setting = self.settings.value('do_not_show_cb')
-        if do_not_show_cb_setting is None or do_not_show_cb_setting == 'false':
-            self.open_file_dialog.show()
+        
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
