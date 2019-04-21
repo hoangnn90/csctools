@@ -196,15 +196,7 @@ class CSCSearch(QMainWindow):
     def createClientWorkspace(self):
         clients = self.p4.getAllClientWorkspace()
         for client in clients:
-            cmd_add = '{} {} {}'.format('p4 client -o', client, '| p4 client -i')
-            # print(cmd_add)
-            print(subprocess.call(cmd_add))
-            cmd_reset = '{}'.format('set P4CLIENT=')
-            # print(cmd_reset)
-            # subprocess.call(cmd_reset)
-            cmd_set = '{}{}'.format('p4 set P4CLIENT=', client)
-            # print(cmd_set)
-            # subprocess.call(cmd_set)
+            self.p4.setP4Client(client)
 
     def updateSale(self):
         sales = []
@@ -239,7 +231,7 @@ class CSCSearch(QMainWindow):
         if self.validateInput():
             try:
                 self.connecToPerforce()
-                # self.createClientWorkspace() #TODO: Create client workspace automatically
+                self.createClientWorkspace()
                 update_sale_thread = Thread(target=self.updateSale)
                 update_sale_thread.start()
                 update_sale_thread.join()

@@ -39,7 +39,7 @@ class P4Helper:
         self.p4.port = server
         self.p4.user = user
         self.p4.password = password
-        # self.p4.client = client
+        self.p4.client = client
         try:
             self.p4.connect()
             self.p4.run_login()
@@ -63,6 +63,9 @@ class P4Helper:
         for d in dicts:
             clients.append(d['client'])
         return clients
+
+    def setP4Client(self, client):
+        self.p4.set_env('P4CLIENT', client)
 
     def getSaleCodeFromBranch(self, branch):
         """Get sale code from branch name
