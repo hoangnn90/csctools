@@ -220,15 +220,16 @@ class CSCSearch(QMainWindow):
             if sale is not None:
                 sales.append(sale)
         sales = set(sales)
-        for sale in sorted(sales):
-                if self.cb_sale.findText(sale) == -1:
-                    self.cb_sale.addItem(sale)
-                    self.pb_search.setEnabled(True)
-        if len(sales) >= 2 and self.cb_sale.findText('All') == -1:
-            self.cb_sale.insertItem(0, 'All')
-            self.cb_sale.setCurrentIndex(0)
         if len(sales) == 0:
-            log_error("Could not find any file in branch '%s'" % (branch))
+            log_error("Could not find any sale code in branch '%s'" % (branch))
+        else:
+            for sale in sorted(sales):
+                    if self.cb_sale.findText(sale) == -1:
+                        self.cb_sale.addItem(sale)
+                        self.pb_search.setEnabled(True)
+            if len(sales) >= 2 and self.cb_sale.findText('All') == -1:
+                self.cb_sale.insertItem(0, 'All')
+                self.cb_sale.setCurrentIndex(0)
 
     def onConnectBtnClicked(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
