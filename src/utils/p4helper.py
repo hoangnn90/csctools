@@ -69,7 +69,14 @@ class P4Helper:
         """
         values = branch.split('/')
         for i in range(len(sales)):
-            if len(values) >= SALE_CODE_POSITION_IN_BRANCH+1 and sales[i] == values[SALE_CODE_POSITION_IN_BRANCH]:
+            if len(values) >= SALE_CODE_POSITION_IN_BRANCH and sales[i] == values[SALE_CODE_POSITION_IN_BRANCH-1]:
+                if sales[i] != 'EUR': # //depot/PEACE_CSC/Strawberry/EXYNOS5/a5xlte_MM/EUR/ATO/
+                    return sales[i]
+                elif values[SALE_CODE_POSITION_IN_BRANCH-2] in {'OXX', 'OXA', 'OXM','GGSM'}: # //depot/PEACE_CSC/Strawberry/EXYNOS5/a5xlte_MM/GGSM/EUR/
+                    return sales[i]
+                else:
+                    return None # //depot/PEACE_CSC/Strawberry/EXYNOS5/a50/OMC/EUR/ATO/
+            if len(values) >= SALE_CODE_POSITION_IN_BRANCH+1 and sales[i] == values[SALE_CODE_POSITION_IN_BRANCH]: # //depot/PEACE_CSC/Strawberry/EXYNOS5/a50/OMC/OLM/ATO/
                 return sales[i]
         return None
 
