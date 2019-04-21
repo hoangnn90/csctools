@@ -247,6 +247,8 @@ class CSCSearch(QMainWindow):
 
     def isItemToWrite(self, value):
         tag_values = self.le_tag_values.text()
+        if value == '-':
+            return False
         if not tag_values or tag_values == '*':
             return True
         required_values = tag_values.rstrip().split(',')
