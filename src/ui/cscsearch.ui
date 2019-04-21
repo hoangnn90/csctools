@@ -6,14 +6,31 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1337</width>
-    <height>696</height>
+    <width>1366</width>
+    <height>728</height>
    </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1366</width>
+    <height>728</height>
+   </size>
+  </property>
+  <property name="font">
+   <font>
+    <strikeout>false</strikeout>
+   </font>
   </property>
   <property name="windowTitle">
    <string>CSCSearch</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="maximumSize">
+    <size>
+     <width>1366</width>
+     <height>728</height>
+    </size>
+   </property>
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
@@ -208,8 +225,8 @@ QGroupBox::title
      <rect>
       <x>620</x>
       <y>10</y>
-      <width>711</width>
-      <height>631</height>
+      <width>731</width>
+      <height>661</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -235,8 +252,8 @@ QGroupBox::title
       <rect>
        <x>10</x>
        <y>20</y>
-       <width>691</width>
-       <height>601</height>
+       <width>711</width>
+       <height>631</height>
       </rect>
      </property>
      <property name="widgetResizable">
@@ -247,8 +264,8 @@ QGroupBox::title
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>689</width>
-        <height>599</height>
+        <width>709</width>
+        <height>629</height>
        </rect>
       </property>
       <widget class="QTextEdit" name="te_result">
@@ -256,8 +273,8 @@ QGroupBox::title
         <rect>
          <x>10</x>
          <y>10</y>
-         <width>671</width>
-         <height>581</height>
+         <width>691</width>
+         <height>611</height>
         </rect>
        </property>
       </widget>
@@ -397,7 +414,7 @@ QGroupBox::title
       <x>10</x>
       <y>280</y>
       <width>601</width>
-      <height>361</height>
+      <height>391</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -424,7 +441,7 @@ QGroupBox::title
        <x>10</x>
        <y>20</y>
        <width>581</width>
-       <height>331</height>
+       <height>361</height>
       </rect>
      </property>
      <property name="widgetResizable">
@@ -436,7 +453,7 @@ QGroupBox::title
         <x>0</x>
         <y>0</y>
         <width>579</width>
-        <height>329</height>
+        <height>359</height>
        </rect>
       </property>
       <widget class="QTextEdit" name="te_message">
@@ -445,7 +462,7 @@ QGroupBox::title
          <x>10</x>
          <y>10</y>
          <width>561</width>
-         <height>311</height>
+         <height>341</height>
         </rect>
        </property>
        <property name="sizePolicy">
@@ -462,7 +479,7 @@ QGroupBox::title
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>640</y>
+      <y>670</y>
       <width>151</width>
       <height>20</height>
      </rect>
@@ -474,8 +491,8 @@ QGroupBox::title
    <widget class="QLabel" name="label_author">
     <property name="geometry">
      <rect>
-      <x>1280</x>
-      <y>640</y>
+      <x>1310</x>
+      <y>670</y>
       <width>41</width>
       <height>20</height>
      </rect>
@@ -485,17 +502,6 @@ QGroupBox::title
     </property>
    </widget>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1337</width>
-     <height>21</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
  <connections/>
