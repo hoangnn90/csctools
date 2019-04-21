@@ -20,7 +20,7 @@ from utils.stringutils import isNotBlank
 UI_MAIN_WINDOW = "ui\cscsearch.ui"
 UI_OPEN_RESULT_DIALOG = "ui\cscsearch_open_file_dialog.ui"
 ICON_FILE = "ui\cscsearch.png"
-VERSION = "0.09"
+VERSION = "0.10"
 EXTENSIONS = ['.xml']
 
 def resource_path(relative_path):
