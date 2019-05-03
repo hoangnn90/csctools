@@ -1,0 +1,9 @@
+v0.10
+* Fix error find sale code for old models (//CSC_NILE/Strawberry/EXYNOS5/a5xlte_MM/EUR/
+, //PEACE_CSC/Strawberry/EXYNOS5/jackpotlte/CSC/EUR/)
+* Fix error "Client unknown -use 'client' command to create it"
+* Write all result with * value (alternative with option leave it as blank)
+* Update main window size
+
+v0.11
+* Fix error Client can only be used from host

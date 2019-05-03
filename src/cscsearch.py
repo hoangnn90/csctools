@@ -20,7 +20,7 @@ from utils.stringutils import isNotBlank
 UI_MAIN_WINDOW = "ui\cscsearch.ui"
 UI_OPEN_RESULT_DIALOG = "ui\cscsearch_open_file_dialog.ui"
 ICON_FILE = "ui\cscsearch.png"
-VERSION = "0.10"
+VERSION = "0.11"
 EXTENSIONS = ['.xml']
 
 def resource_path(relative_path):
@@ -193,10 +193,8 @@ class CSCSearch(QMainWindow):
             return False
         return True
 
-    def createClientWorkspace(self):
-        clients = self.p4.getAllClientWorkspace()
-        for client in clients:
-            self.p4.setP4Client(client)
+    def setClientWorkspace(self, client):
+        self.p4.setP4Client(client)
 
     def updateSale(self):
         sales = []
@@ -231,7 +229,7 @@ class CSCSearch(QMainWindow):
         if self.validateInput():
             try:
                 self.connecToPerforce()
-                self.createClientWorkspace()
+                self.setClientWorkspace(self.le_wsp.text())
                 update_sale_thread = Thread(target=self.updateSale)
                 update_sale_thread.start()
                 update_sale_thread.join()
