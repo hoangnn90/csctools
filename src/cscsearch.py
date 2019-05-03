@@ -20,7 +20,7 @@ from utils.stringutils import isNotBlank
 UI_MAIN_WINDOW = "ui\cscsearch.ui"
 UI_OPEN_RESULT_DIALOG = "ui\cscsearch_open_file_dialog.ui"
 ICON_FILE = "ui\cscsearch.png"
-VERSION = "0.11"
+VERSION = "0.12"
 EXTENSIONS = ['.xml']
 
 def resource_path(relative_path):
@@ -264,7 +264,7 @@ class CSCSearch(QMainWindow):
                 return True
         return False
 
-    def getFilesInBranch(self, branch, extensions, infos):
+    def getFilesInBranch(self, branch, extensions, sales, infos):
         files = []
         try:
             files = self.p4.getAllDepotFile(branch)
@@ -274,9 +274,9 @@ class CSCSearch(QMainWindow):
         for f in files:
             if self.isCorrectFileExtension(f, extensions) is True:
                 sale = self.p4.getSaleCodeFromBranch(f)
-                if sale is not None:
-                    info = {'file': f, 'sale' : sale}
-                    infos.append(info)
+                if (sale is not None) and ((sales == 'All') or (sales != 'All' and sale in sales)):
+                        info = {'file': f, 'sale' : sale}
+                        infos.append(info)
         return infos
 
     def getResult(self, infos, results):
@@ -356,7 +356,8 @@ class CSCSearch(QMainWindow):
         if self.validateOptions():
             # log_notice('Search is starting ...')
             infos = []
-            find_file_thread = Thread(target=self.getFilesInBranch, args=(self.le_branch.text(), EXTENSIONS, infos))
+            sale = self.cb_sale.currentText()
+            find_file_thread = Thread(target=self.getFilesInBranch, args=(self.le_branch.text(), EXTENSIONS, sale, infos))
             find_file_thread.start()
             find_file_thread.join()
             CSCSearch.infos = infos

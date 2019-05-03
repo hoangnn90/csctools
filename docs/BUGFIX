@@ -7,3 +7,6 @@ v0.10
 
 v0.11
 * Fix error Client can only be used from host
+
+v0.12
+* Optimize search progress by searching only files of selected sale code
