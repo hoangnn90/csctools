@@ -34,7 +34,15 @@ class P4FailedToGetClientWorkspace(P4HelperException):
         super(P4FailedToGetClientWorkspace, self).__init__(message)
 
 class P4Helper:
+    """ Helper class provide method to manipulate P4 data
+    """
     def __init__(self, server, user, password, client=None):
+        """ Connect to P4 with following params:
+            @server: P4 server address (include port number)
+            @user: P4 user
+            @password: password of @user
+            @client: P4 workspace name
+        """ 
         self.p4 = P4()
         self.p4.port = server
         self.p4.user = user
@@ -51,6 +59,8 @@ class P4Helper:
             self.p4.disconnect()
 
     def getAllClientWorkspace(self, options=None):
+        """ Get all client workspace of P4
+        """
         clients = []
         dicts = {}
         try:
@@ -65,17 +75,21 @@ class P4Helper:
         return clients
 
     def setP4Client(self, client):
+        """ Set P4CLIENT with @client
+        """
         self.p4.set_env('P4CLIENT', client)
 
     def getSaleCodeFromBranch(self, branch):
-        """Get sale code from branch name
+        """Get sale code from @branch name
         """
         values = branch.split('/')
         for i in range(len(sales)):
             if len(values) >= SALE_CODE_POSITION_IN_BRANCH and sales[i] == values[SALE_CODE_POSITION_IN_BRANCH-1]:
                 if sales[i] != 'EUR': # //depot/PEACE_CSC/Strawberry/EXYNOS5/a5xlte_MM/EUR/ATO/
                     return sales[i]
-                elif values[SALE_CODE_POSITION_IN_BRANCH-2] in {'OXX', 'OXA', 'OXM','GGSM'}: # //depot/PEACE_CSC/Strawberry/EXYNOS5/a5xlte_MM/GGSM/EUR/
+                # //depot/PEACE_CSC/Strawberry/EXYNOS5/a5xlte_MM/OXX/EUR/, # //depot/PEACE_CSC/Strawberry/EXYNOS5/a5xlte_MM/OXA/EUR/, # //depot/PEACE_CSC/Strawberry/EXYNOS5/a5xlte_MM/OXM/EUR/,
+                # //depot/PEACE_CSC/Strawberry/EXYNOS5/a5xlte_MM/GGSM/EUR/, # //depot/PEACE_CSC/Strawberry/EXYNOS5/a5xlte_MM/EUR/EUR/
+                elif values[SALE_CODE_POSITION_IN_BRANCH-2] in {'OXX', 'OXA', 'OXM','GGSM', 'EUR'}:
                     return sales[i]
                 else:
                     return None # //depot/PEACE_CSC/Strawberry/EXYNOS5/a50/OMC/EUR/ATO/
@@ -84,6 +98,8 @@ class P4Helper:
         return None
 
     def getFileNameFromPath(self, file):
+        """Get file name from @file path
+        """
         if not file:
             return None
         data = file.split("/")
@@ -93,7 +109,7 @@ class P4Helper:
         return None
 
     def getAllDepotBranch(self, branch):
-        """Get all branchs of branch including itself and its sub-directories
+        """Get all branchs of @branch including itself and its sub-directories
         """
         branchs = []
         mqueue = queue.Queue()
@@ -113,7 +129,7 @@ class P4Helper:
         return branchs
 
     def getAllDepotFile(self, branch):
-        """Get all files of branch including itself and its sub-directories
+        """Get all files included in @branch including itself and its sub-directories
         """
         files = []
         if branch[len(branch) - 1] is not '/':
@@ -127,7 +143,7 @@ class P4Helper:
         return files
 
     def isDepotFile(self, depot_file):
-        """Verify if @depot_file is existed in depot
+        """Verify if @depot_file is existed in P4 depot
         """
         if not depot_file:
             return False
@@ -138,8 +154,8 @@ class P4Helper:
             return False
 
     def getLocalFilePath(self, depot_file):
-        """ Find file path in local
-            p4 where does not check file exists is local or not.
+        """ Find the file path in local PC of depot file @depot_file
+            Note: p4 where does not check file exists is local or not.
             So local path of file that already removed from depot will also found
         """
         if self.isDepotFile(depot_file) is True:
@@ -157,8 +173,9 @@ class P4Helper:
             
 
     def syncP4File(self, depot_file):
-        """ Map file to local wsp.
-            p4 sync command try to map file even if it is already removed from depot
+        """ Sync @depot_file from P4 server to local
+            It does map @depot_file to client workspace
+            Note: p4 sync command try to map file even if it is already removed from depot
             Use option -q to suppress normal output messages. Messages describing errors or exceptional conditions are not suppressed.
         """
         if self.isDepotFile(depot_file) is True:
