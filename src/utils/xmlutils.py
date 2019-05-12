@@ -28,6 +28,8 @@ class LineNumberingParser(XMLParser):
         return element
 
 class XmlHelper(LineNumberingParser):
+    """XML Helper class that manipulate XML file
+    """
     def __init__(self, file):
         LineNumberingParser.__init__(self)
         self.file = file
@@ -41,10 +43,13 @@ class XmlHelper(LineNumberingParser):
             raise XmlHelperException("%s - %s in %s" % (type(err).__name__, err, file))
 
     def getTree(self, file):
+        """Get XML tree
+        """
         return ET.parse(file, parser=LineNumberingParser())
 
     def getAllTag(self, file):
-        # print("*****getAllTag*****\n")
+        """Get all tag of @file
+        """
         tags = []
         tree = self.getTree(file)
         for e in tree.iter():
@@ -58,28 +63,27 @@ class XmlHelper(LineNumberingParser):
         return tags
     
     def getAllIterator(self, file):
-        # print("*****getAllIterator*****\n")
+        """Get all iterators of @file
+        """
         it_list = []
         tree = self.getTree(file)
         for it in tree.iter():
-            # print("iterator: %s\n" %(it))
             it_list.append(it)
         return it_list
 
     def getAllElementAttribute(self, file, element, attribute):
-        # print("*****getAllElementAttribute*****")
+        """Get all element @element of @file
+        """
         attributes = []
         tree = ET.parse(file)
         root = tree.getroot()
         for e in root.findall(element):
-            # print(e.get(attribute)\n)
             attributes.append(e.get(attribute))
         return attributes
 
     def getTagContent(self, file, tag):
-        '''get value of tag that appear 1st on file
-        '''
-        # print("*****getTagContent*****")
+        """Get value of @tag that appear 1st on file
+        """
         tree = self.getTree(file)
         for e in tree.iter():
             if e.tag == tag:
@@ -87,9 +91,8 @@ class XmlHelper(LineNumberingParser):
         return None
 
     def getTagContents(self, file, tag):
-        '''get all values of tag on file
-        '''
-        # print("*****getTagContents*****")
+        """Get all values of @tag on @file
+        """
         contents = []
         tree = self.getTree(file)
         for e in tree.iter():
@@ -99,6 +102,8 @@ class XmlHelper(LineNumberingParser):
         return contents
 
     def countTag(self, file, tag):
+        """Count the number of @tag in @file
+        """
         count = 0
         tree = self.getTree(file)
         for e in tree.iter():
@@ -107,6 +112,8 @@ class XmlHelper(LineNumberingParser):
         return count
 
     def getPair(self, file, element, first, second):
+        """Get all pairs [@first, @second] of @element in @file
+        """
         pairs = {}
         tree = ET.parse(file)
         root = tree.getroot()
@@ -114,7 +121,6 @@ class XmlHelper(LineNumberingParser):
             first_element = m.find(first)
             second_element = m.find(second)
             pairs[first_element.text] = second_element.text
-            # print ("%s - %s" %(first_element.text, second_element.text))
         return pairs
     
     def getAllElement(self, file, element_name, child_list):
@@ -128,9 +134,7 @@ class XmlHelper(LineNumberingParser):
         Returns:
             A list of dictionary of element information
             Each element contains child tag and its value
-
         """
-        # print("*****getAllElement - %s - %s *****" %(file, element_name))
         element_list = []
         tree = ET.parse(file)
         root = tree.getroot()
@@ -141,10 +145,11 @@ class XmlHelper(LineNumberingParser):
                     if element.find(child) is not None:
                         element_dict[child] = element.find(child).text
                 element_list.append(element_dict)
-                # print("element: %s" %(element_dict))
         return element_list
 
     def getUnUsedRules(self):
+        """Get all unused tags defined in UNUSED_RULE_FILE
+        """
         rules = []
         tree = ET.parse(const.UNUSED_RULE_FILE)
         root = tree.getroot()
@@ -157,11 +162,11 @@ class XmlHelper(LineNumberingParser):
                     if child is not None:
                         info[cond] = child.text
             rules.append(info)
-            # print(info)
         return rules
 
     def getMatchingRules(self):
-        print("*****getMatchingRules*****")
+        """Get all matching rules defined in UNUSED_RULE_FILE
+        """
         rules = []
         tree = ET.parse(const.MATCHING_RULE_FILE)
         root = tree.getroot()
@@ -177,21 +182,22 @@ class XmlHelper(LineNumberingParser):
         return rules
 
     def isInfoMatchingWithRule(self, rule, info):
+        """Validate if @info matched with @rule
+        """
         if len(rule.keys()) == 1:
             return True
         for key in (key for key in rule if key is not "name"):
             if not info:
-                # print("Info is NULL")
                 return False
             if key not in info:
-                # print("Key %s not in info" %(key))
                 return False
             if rule[key] != info[key]:
-                # print("%s is not %s" %(rule[key], info[key]))
                 return False
         return True
 
     def validateParentChildTag(self, file, parent, child):
+        """Validate whether parent-child tag is valid
+        """
         tree = self.getTree(file)
         tree.getroot()
         for iter in tree.iter(parent):
@@ -206,7 +212,6 @@ class XmlHelper(LineNumberingParser):
         """
         pairs = self.getPair(const.PARENT_CHILD_RULE_FILE, "Rule", "Parent", "Child")
         for parent, childs in pairs.items():
-            # print ("%s-%s" %(parent,childs))
             tags = childs.rstrip().split(',')
             for child in tags:
                 self.validateParentChildTag(file, parent, child)
@@ -216,23 +221,21 @@ class XmlHelper(LineNumberingParser):
         """
 
     def validateMeasurementRule(self, file, info):
-        """Validate measurement rule
+        """Validate measurement rule is valid in @file with device @info
         """
         pairs = self.getPair(const.MEASUREMENT_RULE_FILE, "Rule", "Quantity", "Item")
         for quantity, item in pairs.items():
-            # print ("%s-%s" %(quantity,item))
             content = self.getTagContent(file, quantity)
             if content is not None:
                 value = int(content)
                 count = self.countTag(file, item)
                 if value == count:
-                    # logutils.log_info("File %s: %s - %d" %(self.file, item, count))
                     pass
                 else:
                     logutils.log_error("Tag '%s' is %d but '%s' is %d in '%s'" % (quantity, value, item, count, self.file))
 
     def validateUnusedRule(self, file, info):
-        """Validate unused tags
+        """Validate unused rule in @file with device @info
         """
         rules = self.getUnUsedRules()
         for rule in rules:
@@ -266,7 +269,7 @@ class XmlHelper(LineNumberingParser):
 
     
     def validateProfileCount(self, file, info):
-        """Validate whether value of NbNetProfile matching with profile declared in ProfileHandle
+        """Validate whether value of NbNetProfile matching with profile declared in ProfileHandle with device's info @info
 
         Params:
             file: XML file will be validated
@@ -279,26 +282,17 @@ class XmlHelper(LineNumberingParser):
         for profile_handle in profile_handle_lst:
             nb_prof = int(profile_handle['NbNetProfile'])
             declare_prof = len(profile_handle) - 2
-            # print("%d - %d" %(nb_prof, declare_prof))
             if(nb_prof != declare_prof):
                 logutils.log_error("NetworkName '%s' declared %d NbNetProfile but has %d Profile in '%s'" %(profile_handle['NetworkName'], nb_prof, declare_prof, file))
     
 
     def validateProfileExistence(self, file, info):
-        """Validate the existing of profile declared in ProfileHandle
-
-        Params:
-            file: XML file will be validated
-
-        Returns:
-            Print not existing profile
-        
+        """Validate the existing of profile declared in ProfileHandle with device's info @info
         """
         profile_handle_lst = self.getAllElement(file, "ProfileHandle", {"NetworkName", "ProfBrowser", "ProfMMS", "ProfIMS", "ProfXCAP"})
         profile_lst = self.getAllElement(file, "Profile", {"NetworkName", "ProfileName"})
         for profile_handle in profile_handle_lst:
             network_name = profile_handle['NetworkName']
-            # print("network_name: %s" %(network_name))
             for prof_name in profile_handle.items():
                 if prof_name[0] is not "NetworkName":
                     found = False
@@ -313,6 +307,8 @@ class XmlHelper(LineNumberingParser):
 
 
     def validateProfileHandle(self, file, info):
+        """Validate profile handle rule in file @file with device's info @info
+        """
         self.validateProfileExistence(file, info)
         self.validateProfileCount(file, info)
                 

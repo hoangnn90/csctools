@@ -11,18 +11,22 @@ class CscRuleProvider:
         self.m_dict.clear()
 
     def add(self, rule, validator):
-        """ Add validator associtated with @rule
+        """ Add @validator associtated with @rule
         Each rule has each validator function
         """
         self.m_dict[rule] = validator
 
     def remove(self, rule):
+        """ Remvoe @rule from dict
+        """
         try:
             del self.m_dict[rule]
         except KeyError:
             raise CscRuleProviderException("Key '%s' not found" % (rule))
 
     def clear(self):
+        """ Clean up dict
+        """
         self.m_dict.clear()
 
     def execute(self, rule, file, info):

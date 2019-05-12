@@ -10,3 +10,6 @@ v0.11
 
 v0.12
 * Optimize search progress by searching only files of selected sale code
+
+v0.13
+* Fix not found sale code EUR in branch //CSC_NILE/Strawberry/EXYNOS5/hero2lte/EUR/EUR
