@@ -11,16 +11,18 @@ import time
 import subprocess
 from threading import Thread
 from enum import Enum
+from utils import cscutils
 from utils.p4helper import P4Helper, P4HelperException, P4InvalidDepotFileException, P4FailedToSyncException, P4FailedToGetLocalPath
 from utils.cscexception import CSCException, CSCFailOperation
 from utils.xmlutils import XmlHelper, XmlHelperException
 from utils.logutils import Logging, log_error, log_info, log_notice, log_warning
 from utils.stringutils import isNotBlank
+from utils.repo import CSCRepo
 
 UI_MAIN_WINDOW = "ui\cscsearch.ui"
 UI_OPEN_RESULT_DIALOG = "ui\cscsearch_open_file_dialog.ui"
 ICON_FILE = "ui\cscsearch.png"
-VERSION = "0.12"
+VERSION = "0.13"
 EXTENSIONS = ['.xml']
 
 def resource_path(relative_path):
@@ -112,7 +114,7 @@ class CSCSearch(QMainWindow):
         self.le_tag_values.setText(self.settings.value('tag_values'))
 
     def setupOnChangedCallback(self):
-        self.pb_go.clicked.connect(self.onConnectBtnClicked)
+        self.pb_go.clicked.connect(self.onGoBtnClicked)
         self.pb_search.clicked.connect(self.onSearchBtnClicked)
         self.cb_sale.currentIndexChanged.connect(self.onSaleCodeChanged)
         self.le_tag_name.textChanged.connect(self.onTagNameChanged)
@@ -187,26 +189,24 @@ class CSCSearch(QMainWindow):
             user_name = self.le_user.text()
             password = self.le_password.text()
             client = self.le_wsp.text()
-            self.p4 = P4Helper(server, user_name, password, client)
+            self.repo = CSCRepo(P4Helper(server, user_name, password, client))
+            self.repo.connect()
         except P4HelperException as e:
             log_error(e)
             return False
         return True
-
-    def setClientWorkspace(self, client):
-        self.p4.setP4Client(client)
 
     def updateSale(self):
         sales = []
         branch = self.le_branch.text()
         branchs = []
         try:
-            branchs = self.p4.getAllDepotBranch(branch)
+            branchs = self.repo.getAllDepotBranch(branch)
         except P4HelperException as e:
             log_error(e)
             return
         for b in branchs:
-            sale = self.p4.getSaleCodeFromBranch(b)
+            sale = cscutils.getSaleCodeFromBranch(b)
             if sale is not None:
                 sales.append(sale)
         sales = set(sales)
@@ -221,7 +221,7 @@ class CSCSearch(QMainWindow):
                 self.cb_sale.insertItem(0, 'All')
                 self.cb_sale.setCurrentIndex(0)
 
-    def onConnectBtnClicked(self):
+    def onGoBtnClicked(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.te_message.clear()
         self.te_result.clear()
@@ -229,7 +229,6 @@ class CSCSearch(QMainWindow):
         if self.validateInput():
             try:
                 self.connecToPerforce()
-                self.setClientWorkspace(self.le_wsp.text())
                 update_sale_thread = Thread(target=self.updateSale)
                 update_sale_thread.start()
                 update_sale_thread.join()
@@ -267,13 +266,13 @@ class CSCSearch(QMainWindow):
     def getFilesInBranch(self, branch, extensions, sales, infos):
         files = []
         try:
-            files = self.p4.getAllDepotFile(branch)
+            files = self.repo.getAllDepotFileInBranch(branch)
         except P4HelperException as e:
             log_error(e)
             return
         for f in files:
             if self.isCorrectFileExtension(f, extensions) is True:
-                sale = self.p4.getSaleCodeFromBranch(f)
+                sale = cscutils.getSaleCodeFromBranch(f)
                 if (sale is not None) and ((sales == 'All') or (sales != 'All' and sale in sales)):
                         info = {'file': f, 'sale' : sale}
                         infos.append(info)
@@ -287,8 +286,8 @@ class CSCSearch(QMainWindow):
                 depot_file = info['file']
                 local_file = ''
                 try:
-                    self.p4.syncP4File(depot_file)
-                    local_file = self.p4.getLocalFilePath(depot_file)
+                    self.repo.syncFile(depot_file)
+                    local_file = self.repo.getLocalFilePath(depot_file)
                 except P4FailedToSyncException as e:
                     log_warning(str(e))
                     continue
@@ -388,11 +387,8 @@ class CSCSearch(QMainWindow):
                 log_notice('Search is finished. Please check error message!')
         QApplication.restoreOverrideCursor()
 
-        
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = CSCSearch()
     window.show()
-    settings = QSettings
     sys.exit(app.exec_())

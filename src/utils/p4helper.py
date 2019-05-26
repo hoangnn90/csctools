@@ -4,10 +4,10 @@ import queue
 from P4 import P4, P4Exception
 from p4swamp import p4, P4Error
 
-from utils import logutils, const
+from utils import logutils, const, repo
 from utils.salecode import sales
 
-SALE_CODE_POSITION_IN_BRANCH = 8 #//PEACE_CSC/Strawberry/EXYNOS5/a50/OMC/OLM/XXV/
+from utils.repo import CSCRepo
 
 class P4HelperException(Exception):
     def __init__(self, message):
@@ -33,7 +33,7 @@ class P4FailedToGetClientWorkspace(P4HelperException):
     def __init__(self, message):
         super(P4FailedToGetClientWorkspace, self).__init__(message)
 
-class P4Helper:
+class P4Helper(CSCRepo):
     """ Helper class provide method to manipulate P4 data
     """
     def __init__(self, server, user, password, client=None):
@@ -48,13 +48,20 @@ class P4Helper:
         self.p4.user = user
         self.p4.password = password
         self.p4.client = client
+
+    def connect(self):
         try:
+            self.setClient(self.p4.client)
             self.p4.connect()
             self.p4.run_login()
         except P4Exception as e:
             raise P4ConnectionErrorException("Failed to connect to perfore server %s with user %s, error %s" % (self.p4.port, self.p4.user, str(e)))
 
     def __del__(self):
+        if self.p4.connected() is True:
+            self.p4.disconnect()
+    
+    def disconnect(self):
         if self.p4.connected() is True:
             self.p4.disconnect()
 
@@ -74,28 +81,10 @@ class P4Helper:
             clients.append(d['client'])
         return clients
 
-    def setP4Client(self, client):
+    def setClient(self, client):
         """ Set P4CLIENT with @client
         """
         self.p4.set_env('P4CLIENT', client)
-
-    def getSaleCodeFromBranch(self, branch):
-        """Get sale code from @branch name
-        """
-        values = branch.split('/')
-        for i in range(len(sales)):
-            if len(values) >= SALE_CODE_POSITION_IN_BRANCH and sales[i] == values[SALE_CODE_POSITION_IN_BRANCH-1]:
-                if sales[i] != 'EUR': # //depot/PEACE_CSC/Strawberry/EXYNOS5/a5xlte_MM/EUR/ATO/
-                    return sales[i]
-                # //depot/PEACE_CSC/Strawberry/EXYNOS5/a5xlte_MM/OXX/EUR/, # //depot/PEACE_CSC/Strawberry/EXYNOS5/a5xlte_MM/OXA/EUR/, # //depot/PEACE_CSC/Strawberry/EXYNOS5/a5xlte_MM/OXM/EUR/,
-                # //depot/PEACE_CSC/Strawberry/EXYNOS5/a5xlte_MM/GGSM/EUR/, # //depot/PEACE_CSC/Strawberry/EXYNOS5/a5xlte_MM/EUR/EUR/
-                elif values[SALE_CODE_POSITION_IN_BRANCH-2] in {'OXX', 'OXA', 'OXM','GGSM', 'EUR'}:
-                    return sales[i]
-                else:
-                    return None # //depot/PEACE_CSC/Strawberry/EXYNOS5/a50/OMC/EUR/ATO/
-            if len(values) >= SALE_CODE_POSITION_IN_BRANCH+1 and sales[i] == values[SALE_CODE_POSITION_IN_BRANCH]: # //depot/PEACE_CSC/Strawberry/EXYNOS5/a50/OMC/OLM/ATO/
-                return sales[i]
-        return None
 
     def getFileNameFromPath(self, file):
         """Get file name from @file path
@@ -128,7 +117,7 @@ class P4Helper:
                 mqueue.put(str(subdir["dir"] + "/"))
         return branchs
 
-    def getAllDepotFile(self, branch):
+    def getAllDepotFileInBranch(self, branch):
         """Get all files included in @branch including itself and its sub-directories
         """
         files = []
@@ -172,7 +161,7 @@ class P4Helper:
             raise P4InvalidDepotFileException("File %s is not existed in depot" %(depot_file))
             
 
-    def syncP4File(self, depot_file):
+    def syncFile(self, depot_file):
         """ Sync @depot_file from P4 server to local
             It does map @depot_file to client workspace
             Note: p4 sync command try to map file even if it is already removed from depot
