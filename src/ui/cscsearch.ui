@@ -318,7 +318,7 @@ QGroupBox::title
       </rect>
      </property>
      <property name="text">
-      <string>Tag values (separed by ,)</string>
+      <string>Tag values (separed by ;)</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_tag_name">

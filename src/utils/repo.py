@@ -1,3 +1,40 @@
+class CSCRepoException(Exception):
+    def __init__(self, message):
+        super(CSCRepoException, self).__init__(message)
+
+class CSCRepoFailedException(CSCRepoException):
+    def __init__(self, message):
+        super(CSCRepoFailedException, self).__init__(message)
+
+class CSCRepoInvalidException(CSCRepoException):
+    def __init__(self, message):
+        super(CSCRepoInvalidException, self).__init__(message)
+
+class CSCRepoFailedToSyncException(CSCRepoFailedException):
+    def __init__(self, message):
+        super(CSCRepoFailedToSyncException, self).__init__(message)
+
+class CSCRepoInvalidRepoBranchException(CSCRepoInvalidException):
+    def __init__(self, message):
+        super(CSCRepoInvalidRepoBranchException, self).__init__(message)
+
+class CSCRepoInvalidRepoFileException(CSCRepoInvalidException):
+    def __init__(self, message):
+        super(CSCRepoInvalidRepoFileException, self).__init__(message)
+
+class CSCRepoFailedToGetLocalPath(CSCRepoFailedException):
+    def __init__(self, message):
+        super(CSCRepoFailedToGetLocalPath, self).__init__(message)
+
+class CSCRepoConnectionErrorException(CSCRepoFailedException):
+    def __init__(self, message):
+        super(CSCRepoConnectionErrorException, self).__init__(message)
+
+class P4FailedToGetClientWorkspace(CSCRepoFailedException):
+    def __init__(self, message):
+        super(P4FailedToGetClientWorkspace, self).__init__(message)
+
+
 class CSCRepo(object):
     def __init__(self, repo):
         self.repo = repo
@@ -8,14 +45,15 @@ class CSCRepo(object):
     def disconnect(self):
         self.repo.disconnect()
 
-    def getAllDepotBranch(self, branch):
-        return self.repo.getAllDepotBranch(branch)
+    def getAllRepoBranch(self, branch):
+        return self.repo.getAllRepoBranch(branch)
 
-    def getAllDepotFileInBranch(self, branch):
-        return self.repo.getAllDepotFileInBranch(branch)
+    def getAllRepoFileInBranch(self, branch):
+        return self.repo.getAllRepoFileInBranch(branch)
 
     def syncFile(self, repo_file):
         self.repo.syncFile(repo_file)
     
     def getLocalFilePath(self, repo_file):
         return self.repo.getLocalFilePath(repo_file)
+    

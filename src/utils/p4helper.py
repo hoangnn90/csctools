@@ -1,5 +1,6 @@
 import os
 import queue
+import shutil
 
 from P4 import P4, P4Exception
 from p4swamp import p4, P4Error
@@ -7,31 +8,7 @@ from p4swamp import p4, P4Error
 from utils import logutils, const, repo
 from utils.salecode import sales
 
-from utils.repo import CSCRepo
-
-class P4HelperException(Exception):
-    def __init__(self, message):
-        super(P4HelperException, self).__init__(message)
-
-class P4FailedToSyncException(P4HelperException):
-    def __init__(self, message):
-        super(P4FailedToSyncException, self).__init__(message)
-
-class P4InvalidDepotFileException(P4HelperException):
-    def __init__(self, message):
-        super(P4InvalidDepotFileException, self).__init__(message)
-
-class P4FailedToGetLocalPath(P4HelperException):
-    def __init__(self, message):
-        super(P4FailedToGetLocalPath, self).__init__(message)
-
-class P4ConnectionErrorException(P4HelperException):
-    def __init__(self, message):
-        super(P4ConnectionErrorException, self).__init__(message)
-
-class P4FailedToGetClientWorkspace(P4HelperException):
-    def __init__(self, message):
-        super(P4FailedToGetClientWorkspace, self).__init__(message)
+from utils.repo import CSCRepo, CSCRepoException, CSCRepoInvalidRepoFileException, CSCRepoInvalidRepoBranchException, CSCRepoFailedToSyncException, CSCRepoFailedToGetLocalPath, CSCRepoConnectionErrorException
 
 class P4Helper(CSCRepo):
     """ Helper class provide method to manipulate P4 data
@@ -55,7 +32,7 @@ class P4Helper(CSCRepo):
             self.p4.connect()
             self.p4.run_login()
         except P4Exception as e:
-            raise P4ConnectionErrorException("Failed to connect to perfore server %s with user %s, error %s" % (self.p4.port, self.p4.user, str(e)))
+            raise CSCRepoConnectionErrorException("Failed to connect to perfore server %s with user %s, error %s" % (self.p4.port, self.p4.user, str(e)))
 
     def __del__(self):
         if self.p4.connected() is True:
@@ -97,7 +74,7 @@ class P4Helper(CSCRepo):
             return name
         return None
 
-    def getAllDepotBranch(self, branch):
+    def getAllRepoBranch(self, branch):
         """Get all branchs of @branch including itself and its sub-directories
         """
         branchs = []
@@ -112,12 +89,12 @@ class P4Helper(CSCRepo):
             try:
                 dirs = self.p4.run("dirs", dir + '*')
             except P4Exception:
-                raise P4HelperException("Could not find branch %s in depot, error %s" %(branch, self.p4.errors))
+                raise CSCRepoException("Could not find branch %s in depot, error %s" %(branch, self.p4.errors))
             for subdir in dirs:
                 mqueue.put(str(subdir["dir"] + "/"))
         return branchs
 
-    def getAllDepotFileInBranch(self, branch):
+    def getAllRepoFileInBranch(self, branch):
         """Get all files included in @branch including itself and its sub-directories
         """
         files = []
@@ -126,7 +103,7 @@ class P4Helper(CSCRepo):
         try:
             files_dict = self.p4.run('files', '-e', branch + '...')
         except P4Exception:
-            raise P4HelperException("Could not find any file in branch %s in depot" %(branch))
+            raise CSCRepoException("Could not find any file in branch %s in depot" %(branch))
         for file_dict in files_dict:
             files.append(file_dict['depotFile'])
         return files
@@ -151,15 +128,13 @@ class P4Helper(CSCRepo):
             file_infos = {}
             try:
                 file_infos = p4('where', depot_file)
-                # logutils.log_info(file_infos)
                 local_path = file_infos[0]["path"]
-                # logutils.log_info("local_path: %s" %(local_path))
                 return local_path
             except P4Error as e:
-                raise P4FailedToGetLocalPath(" %s " %(str(e)))
+                raise CSCRepoFailedToGetLocalPath(" %s " %(str(e)))
         else:
-            raise P4InvalidDepotFileException("File %s is not existed in depot" %(depot_file))
-            
+            raise CSCRepoInvalidRepoFileException("File %s is not existed in depot" %(depot_file))
+                
 
     def syncFile(self, depot_file):
         """ Sync @depot_file from P4 server to local
@@ -171,7 +146,7 @@ class P4Helper(CSCRepo):
             try:
                 p4('sync', '-s', '-q', depot_file + '#head')
             except P4Error as e:
-                raise P4FailedToSyncException("Failed to sync '%s' with error %s" % (depot_file, str(e)))
+                raise CSCRepoFailedToSyncException("Failed to sync '%s' with error %s" % (depot_file, str(e)))
         else:
-            raise P4InvalidDepotFileException("File '%s' is not existed in depot" % (depot_file))
+            raise CSCRepoInvalidRepoFileException("File '%s' is not existed in depot" % (depot_file))
     

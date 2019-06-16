@@ -12,7 +12,8 @@ import subprocess
 from threading import Thread
 from enum import Enum
 from utils import cscutils
-from utils.p4helper import P4Helper, P4HelperException, P4InvalidDepotFileException, P4FailedToSyncException, P4FailedToGetLocalPath
+from utils.p4helper import P4Helper
+from utils.repo import CSCRepoException, CSCRepoInvalidException, CSCRepoFailedException
 from utils.cscexception import CSCException, CSCFailOperation
 from utils.xmlutils import XmlHelper, XmlHelperException
 from utils.logutils import Logging, log_error, log_info, log_notice, log_warning
@@ -20,9 +21,9 @@ from utils.stringutils import isNotBlank
 from utils.repo import CSCRepo
 
 UI_MAIN_WINDOW = "ui\cscsearch.ui"
-UI_OPEN_RESULT_DIALOG = "ui\cscsearch_open_file_dialog.ui"
+UI_OPEN_RESULT_DIALOG = "ui\cscsearchopenfiledialog.ui"
 ICON_FILE = "ui\cscsearch.png"
-VERSION = "0.13"
+VERSION = "0.14"
 EXTENSIONS = ['.xml']
 
 def resource_path(relative_path):
@@ -38,7 +39,7 @@ class OpenFileType(Enum):
 class OpenFileDialog(QDialog):
     def __init__(self, parent):
         super(OpenFileDialog, self).__init__()
-        self.settings = QSettings('csctools', 'cscsearch_open_result_dialog')
+        self.settings = QSettings('csctools', 'cscsearchopenfiledialog')
         self.setupUI()
         self.parent=parent
     
@@ -50,9 +51,9 @@ class OpenFileDialog(QDialog):
         self.setWindowIcon(QIcon(resource_path(ICON_FILE)))
         self.setWindowTitle("Open result files")
         self.rb_txt.setChecked(True)
-        self.setupOnChangedCallback()
+        self.setupCallback()
 
-    def setupOnChangedCallback(self):
+    def setupCallback(self):
         self.pb_ok.clicked.connect(self.onOKBtnClicked)
         self.pb_cancel.clicked.connect(self.onCancelBtnClicked)
     
@@ -113,8 +114,8 @@ class CSCSearch(QMainWindow):
             self.le_tag_name.setText(self.settings.value('tag_name'))
         self.le_tag_values.setText(self.settings.value('tag_values'))
 
-    def setupOnChangedCallback(self):
-        self.pb_go.clicked.connect(self.onGoBtnClicked)
+    def setupCallback(self):
+        self.pb_go.clicked.connect(self.onConnectBtnClicked)
         self.pb_search.clicked.connect(self.onSearchBtnClicked)
         self.cb_sale.currentIndexChanged.connect(self.onSaleCodeChanged)
         self.le_tag_name.textChanged.connect(self.onTagNameChanged)
@@ -129,7 +130,7 @@ class CSCSearch(QMainWindow):
         self.setWindowIcon(QIcon(resource_path(ICON_FILE)))
         self.label_version.setText(self.label_version.text() + VERSION)
         self.restoreSettings()
-        self.setupOnChangedCallback()
+        self.setupCallback()
 
     def setupLog(self):
         sys.stdout = Logging(newText=self.onLogChanged)
@@ -191,7 +192,7 @@ class CSCSearch(QMainWindow):
             client = self.le_wsp.text()
             self.repo = CSCRepo(P4Helper(server, user_name, password, client))
             self.repo.connect()
-        except P4HelperException as e:
+        except CSCRepoException as e:
             log_error(e)
             return False
         return True
@@ -201,8 +202,8 @@ class CSCSearch(QMainWindow):
         branch = self.le_branch.text()
         branchs = []
         try:
-            branchs = self.repo.getAllDepotBranch(branch)
-        except P4HelperException as e:
+            branchs = self.repo.getAllRepoBranch(branch)
+        except CSCRepoException as e:
             log_error(e)
             return
         for b in branchs:
@@ -221,19 +222,20 @@ class CSCSearch(QMainWindow):
                 self.cb_sale.insertItem(0, 'All')
                 self.cb_sale.setCurrentIndex(0)
 
-    def onGoBtnClicked(self):
+    def onConnectBtnClicked(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.te_message.clear()
         self.te_result.clear()
         self.open_file_dialog.close()
         if self.validateInput():
             try:
-                self.connecToPerforce()
-                update_sale_thread = Thread(target=self.updateSale)
-                update_sale_thread.start()
-                update_sale_thread.join()
-            except P4HelperException as e:
+                if self.connecToPerforce():
+                    update_sale_thread = Thread(target=self.updateSale)
+                    update_sale_thread.start()
+                    update_sale_thread.join()
+            except CSCRepoException as e:
                 log_error(str(e))
+                return
         QApplication.restoreOverrideCursor()
 
     def validateOptions(self):
@@ -248,7 +250,7 @@ class CSCSearch(QMainWindow):
             return False
         if not tag_values or tag_values == '*':
             return True
-        required_values = tag_values.rstrip().split(',')
+        required_values = tag_values.rstrip().split(';')
         for required_value in required_values:
             if required_value == value:
                 return True
@@ -266,8 +268,8 @@ class CSCSearch(QMainWindow):
     def getFilesInBranch(self, branch, extensions, sales, infos):
         files = []
         try:
-            files = self.repo.getAllDepotFileInBranch(branch)
-        except P4HelperException as e:
+            files = self.repo.getAllRepoFileInBranch(branch)
+        except CSCRepoException as e:
             log_error(e)
             return
         for f in files:
@@ -288,13 +290,10 @@ class CSCSearch(QMainWindow):
                 try:
                     self.repo.syncFile(depot_file)
                     local_file = self.repo.getLocalFilePath(depot_file)
-                except P4FailedToSyncException as e:
+                except CSCRepoFailedException as e:
                     log_warning(str(e))
                     continue
-                except P4InvalidDepotFileException as e:
-                    continue
-                except P4FailedToGetLocalPath as e:
-                    log_error(str(e))
+                except CSCRepoInvalidException as e:
                     continue
                 if os.path.isfile(local_file):  # Fix file that deleted from server but 'p4 files' cmd still get it
                     try:
