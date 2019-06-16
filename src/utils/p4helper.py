@@ -133,7 +133,22 @@ class P4Helper(CSCRepo):
             except P4Error as e:
                 raise CSCRepoFailedToGetLocalPath(" %s " %(str(e)))
         else:
-            raise CSCRepoInvalidRepoFileException("File %s is not existed in depot" %(depot_file))
+            raise CSCRepoInvalidRepoFileException("File %s is not existed in depot" %(depot_file))            
+    
+    
+    def getLocalDirPath(self, depot_branch):
+        """ Find the dir path in local PC of  @depot_branch
+        """
+        if depot_branch[len(depot_branch) - 1] is '/':
+            depot_branch = depot_branch[:-1]
+        
+        dir_infos = {}
+        try:
+            dir_infos = p4('where', depot_branch)
+            local_dir = dir_infos[0]["path"]
+            return local_dir + '\\'
+        except P4Error:
+            raise CSCRepoFailedToGetLocalPath("Failed to get local dir path of %s " %(depot_branch))
                 
 
     def syncFile(self, depot_file):
@@ -149,4 +164,27 @@ class P4Helper(CSCRepo):
                 raise CSCRepoFailedToSyncException("Failed to sync '%s' with error %s" % (depot_file, str(e)))
         else:
             raise CSCRepoInvalidRepoFileException("File '%s' is not existed in depot" % (depot_file))
-    
+
+    def createChangeList(self, description):
+        """ Create a new changelist and return the changelist number
+        """
+        changespec = self.p4.save_change({'Change': 'new', 'Description': description})[0]
+        return int(changespec.split()[1])
+
+    def checkoutFile(self, repo_file, wsp_file, local_file, changelist):
+        """ Replace @repo_file content by @local_file in @changelist
+        If @repo_file is not existed in repo, add it to repo
+        If @repo_file is checkout in another changelist, throw exception
+        """
+        opened_files = self.p4.run('opened')
+        for f in opened_files:
+            if(f['depotFile'] == repo_file and f['change'] != str(changelist)):
+                raise CSCRepoInvalidRepoFileException("File %s is already checkout in changelist %s" %(repo_file, f['change']))
+        try:
+            self.p4.run('edit', '-c' , int(changelist), repo_file)
+            shutil.copy2(local_file, wsp_file)
+        except P4Exception as e:
+            shutil.copy2(local_file, wsp_file)
+            self.p4.run('add', '-c', int(changelist), wsp_file)
+        except FileNotFoundError as e:
+            raise CSCRepoInvalidRepoFileException(str(e))

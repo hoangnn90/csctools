@@ -29,7 +29,15 @@
     pip install pyqt5
     pip install pyqt5-tools
    ```
-
+- In case of installing errror, use easy_install below:
+    ```cmd
+    easy_install p4python
+    easy_install p4swamp
+    easy_install pyqt5
+    easy_install pyqt5-tools
+    easy_install pyqt5-sip
+   ```
+  
 # 2. Optional tools
 
 ## Install QtCreator for creating Qt GUI
@@ -54,18 +62,28 @@ Link: <https://cdist2.perforce.com/perforce/r18.2/bin.ntx64/helix-core-server-x6
   + Link: <https://github.com/upx/upx/releases/tag/v3.95>
   + Usage: <https://pyinstaller.readthedocs.io/en/stable/usage.html>
 
-- Build exe file
+- Build cscsearch
   + Go to folder contain .py file 
   + Enter below cmd:
     + Without compress
     ```cmd
-    pyinstaller --debug --clean --onefile --nowindowed --add-data "./ui/cscsearch.png;./ui" --add-data "./ui/cscsearch.ui;./ui" --add-data "./ui/cscsearch_open_file_dialog.ui;./ui" cscsearch.py
+    pyinstaller --debug --clean --onefile --nowindowed --add-data "./ui/cscsearch.png;./ui" --add-data "./ui/cscsearch.ui;./ui" --add-data "./ui/cscsearchopenfiledialog.ui;./ui" cscsearch.py
     ```
     + With compress
     ```cmd
-    pyinstaller --debug --clean --onefile --nowindowed --upx-dir G:\working\CSCTool\tools\upx-3.95-win64\upx-3.95-win64 --add-data "./ui/cscsearch.png;./ui" --add-data "./ui/cscsearch.ui;./ui" --add-data "./ui/cscsearch_open_file_dialog.ui;./ui" cscsearch.py
+    pyinstaller --debug --clean --onefile --nowindowed --upx-dir G:\working\CSCTool\tools\upx-3.95-win64\upx-3.95-win64 --add-data "./ui/cscsearch.png;./ui" --add-data "./ui/cscsearch.ui;./ui" --add-data "./ui/cscsearchopenfiledialog.ui;./ui" cscsearch.py
     ```
-
+- Build cscchangelistcreator
+  + Go to folder contain .py file 
+  + Enter below cmd:
+    + Without compress
+    ```cmd
+    pyinstaller --debug --clean --onefile --nowindowed --add-data "./ui/cscchangelistcreator.png;./ui" --add-data "./ui/cscchangelistcreator.ui;./ui" cscchangelistcreator.py
+    ```
+    + With compress
+    ```cmd
+    pyinstaller --debug --clean --onefile --nowindowed --upx-dir G:\working\CSCTool\tools\upx-3.95-win64\upx-3.95-win64 --add-data "./ui/cscchangelistcreator.png;./ui" --add-data "./ui/cscchangelistcreator.ui;./ui" cscchangelistcreator.py
+    ```
 # 4. Run & Debug
 ## Enable debug log
 - Modify DEBUG value in logutils.py to TRUE
@@ -77,3 +95,19 @@ Link: <https://cdist2.perforce.com/perforce/r18.2/bin.ntx64/helix-core-server-x6
 
 ![](run.png)
 
+## Setup client workspace
+In case of getting error 'Client `CLIENT_NAME` unknow', enter following cmds:
+```cmd
+p4 client -o CLIENT_NAME | p4 client -i
+set P4CLIENT=
+p4 set P4CLIENT=CLIENT_NAME
+p4 info
+```
+
+## Change P4 server address and port
+In case of getting error due to using old P4 server, enter following cmds.
+- Replace serveraddr & port
+```cmd
+p4 set P4PORT=serveraddr:port
+```
+- Enter ```p4 info``` to verify

@@ -18,3 +18,7 @@ apps = "apps.xml"
 others = "others.xml"
 
 tag_conditions = ['DeviceType', 'SimType', 'ImsSupported', 'ProjectType', 'IMSSetting']
+
+DEFAULT_CHANGELIST_DESCRIPTION = "\
+[Description] Changelist created by CSCChangeListCreator tool \
+"

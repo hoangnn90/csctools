@@ -57,3 +57,11 @@ class CSCRepo(object):
     def getLocalFilePath(self, repo_file):
         return self.repo.getLocalFilePath(repo_file)
     
+    def getLocalDirPath(self, repo_file):
+        return self.repo.getLocalDirPath(repo_file)
+
+    def createChangeList(self, description):
+        return self.repo.createChangeList(description)
+
+    def checkoutFile(self, repo_file, wsp_file, local_file, changelist):
+        self.repo.checkoutFile(repo_file, wsp_file, local_file, changelist)

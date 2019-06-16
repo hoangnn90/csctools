@@ -1,3 +1,4 @@
+# CSCSearch
 v0.10
 * Fix error find sale code for old models (//CSC_NILE/Strawberry/EXYNOS5/a5xlte_MM/EUR/
 , //PEACE_CSC/Strawberry/EXYNOS5/jackpotlte/CSC/EUR/)
@@ -13,3 +14,10 @@ v0.12
 
 v0.13
 * Fix not found sale code EUR in branch //CSC_NILE/Strawberry/EXYNOS5/hero2lte/EUR/EUR
+
+v0.14
+* Separate tag values by ';'
+
+# CSCChangeListCreator
+v0.01
+* Initial version

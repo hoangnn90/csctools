@@ -1,0 +1,7 @@
+# Both CSCSearch & CSCChangeListCreator
+- Transform as a web application (Django/Flask)
+# CSCSearch
+- Extend CSC file type to support other types (e.g: json)
+- Extend to able to search multiple tags
+# CSCChangeListCreator
+- Extend to support other CSC file type

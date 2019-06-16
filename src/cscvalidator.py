@@ -2,7 +2,8 @@ from PyQt5 import uic, QtWidgets, QtGui
 import sys
 import ctypes
 from utils import xmlutils, logutils, const, cscruleprovider, cscrulevalidator, cscrulemap, cscexception
-from utils.p4helper import P4Helper, P4HelperException
+from utils.p4helper import P4Helper
+from utils.repo import CSCRepoException
 from utils.cscruleprovider import CscRuleProvider, CscRuleProviderException
 from utils.cscrulemap import CscRuleMap, CscRuleMapException
 from utils.cscrulevalidator import CscRuleValidatorException
@@ -31,7 +32,7 @@ class CSCValidator(QtWidgets.QDialog):
         uic.loadUi(resource_path(UI_FILE), self)
         self.setWindowIcon(QtGui.QIcon(resource_path(ICON_FILE)))
         self.label_version.setText(self.label_version.text()  + tool_version)
-        self.pb_go.clicked.connect(self.onGoBtnClicked)
+        self.pb_go.clicked.connect(self.onConnectBtnClicked)
         self.pb_validate.clicked.connect(self.onValidateBtnClicked)
         self.cb_rule_file.currentIndexChanged.connect(self.onFileBoxChanged)
         self.cb_sale.currentIndexChanged.connect(self.onSaleCodeChanged)
@@ -131,7 +132,7 @@ class CSCValidator(QtWidgets.QDialog):
         client = self.le_wsp.text()
         try:
             self.p4 = P4Helper(server, user_name, password, client)
-        except P4HelperException as e:
+        except CSCRepoException as e:
             logutils.log_error(e)
             return False
         return True
@@ -143,8 +144,8 @@ class CSCValidator(QtWidgets.QDialog):
         is_sale_found = False
         branchs = []
         try:
-            branchs = self.p4.getAllDepotBranch(branch)
-        except P4HelperException as e:
+            branchs = self.p4.getAllRepoBranch(branch)
+        except CSCRepoException as e:
             logutils.log_error(e)
             return
         for b in branchs:
@@ -158,7 +159,7 @@ class CSCValidator(QtWidgets.QDialog):
         if is_sale_found is False:
             logutils.log_error("Could not find any file '%s' in branch '%s'" % (rule_file, branch))
 
-    def onGoBtnClicked(self):
+    def onConnectBtnClicked(self):
         self.te_message.clear()
         if self.validateInput() and self.connecToPerforce():
             self.updateSale()
@@ -169,7 +170,7 @@ class CSCValidator(QtWidgets.QDialog):
         branch = self.le_branch.text()
         try:
             rules = self.m_map.get(rule_file)
-            branchs = self.p4.getAllDepotBranch(branch)
+            branchs = self.p4.getAllRepoBranch(branch)
             for b in branchs:
                 p4_file = b + rule_file
                 if sale in b and self.p4.isDepotFile(p4_file) is True:
@@ -178,7 +179,7 @@ class CSCValidator(QtWidgets.QDialog):
                         try:
                             local_path = self.p4.getLocalFilePath(p4_file)
                             self.m_provider.execute(rule, local_path, {})
-                        except P4HelperException as e:
+                        except CSCRepoException as e:
                             logutils.log_error("Could not find local file of %s. Error is %s" %(p4_file, str(e)))
             logutils.log_notice("Validation is done")
         except CscRuleMapException:

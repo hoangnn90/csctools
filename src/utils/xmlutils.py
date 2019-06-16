@@ -178,7 +178,6 @@ class XmlHelper(LineNumberingParser):
                     if child is not None:
                         info[cond] = child.text
             rules.append(info)
-            print(info)
         return rules
 
     def isInfoMatchingWithRule(self, rule, info):
