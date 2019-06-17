@@ -8,7 +8,7 @@ from p4swamp import p4, P4Error
 from utils import logutils, const, repo
 from utils.salecode import sales
 
-from utils.repo import CSCRepo, CSCRepoException, CSCRepoInvalidRepoFileException, CSCRepoInvalidRepoBranchException, CSCRepoFailedToSyncException, CSCRepoFailedToGetLocalPath, CSCRepoConnectionErrorException
+from utils.repo import CSCRepo, CSCRepoException, CSCRepoInvalidRepoFileException, CSCRepoInvalidRepoBranchException, CSCRepoFailedToSyncException, CSCRepoFailedToGetWspDirPath, CSCRepoConnectionErrorException
 
 class P4Helper(CSCRepo):
     """ Helper class provide method to manipulate P4 data
@@ -131,13 +131,13 @@ class P4Helper(CSCRepo):
                 local_path = file_infos[0]["path"]
                 return local_path
             except P4Error as e:
-                raise CSCRepoFailedToGetLocalPath(" %s " %(str(e)))
+                raise CSCRepoFailedToGetWspDirPath(" %s " %(str(e)))
         else:
             raise CSCRepoInvalidRepoFileException("File %s is not existed in depot" %(depot_file))            
     
     
-    def getLocalDirPath(self, depot_branch):
-        """ Find the dir path in local PC of  @depot_branch
+    def getWspDirPath(self, depot_branch):
+        """ Find the wsp dir path of @depot_branch
         """
         if depot_branch[len(depot_branch) - 1] is '/':
             depot_branch = depot_branch[:-1]
@@ -148,8 +148,7 @@ class P4Helper(CSCRepo):
             local_dir = dir_infos[0]["path"]
             return local_dir + '\\'
         except P4Error:
-            raise CSCRepoFailedToGetLocalPath("Failed to get local dir path of %s " %(depot_branch))
-                
+            raise CSCRepoFailedToGetWspDirPath("Failed to get wsp dir path of %s. Please map it to wsp and get latest revision before doing checkout" %(depot_branch))
 
     def syncFile(self, depot_file):
         """ Sync @depot_file from P4 server to local
@@ -159,7 +158,7 @@ class P4Helper(CSCRepo):
         """
         if self.isDepotFile(depot_file) is True:
             try:
-                p4('sync', '-s', '-q', depot_file + '#head')
+                p4('sync', '-f', '-q', depot_file + '#head')
             except P4Error as e:
                 raise CSCRepoFailedToSyncException("Failed to sync '%s' with error %s" % (depot_file, str(e)))
         else:
@@ -184,7 +183,10 @@ class P4Helper(CSCRepo):
             self.p4.run('edit', '-c' , int(changelist), repo_file)
             shutil.copy2(local_file, wsp_file)
         except P4Exception as e:
-            shutil.copy2(local_file, wsp_file)
-            self.p4.run('add', '-c', int(changelist), wsp_file)
+            try:
+                shutil.copy2(local_file, wsp_file)
+                self.p4.run('add', '-c', int(changelist), wsp_file)
+            except FileNotFoundError as e:
+                raise CSCRepoInvalidRepoFileException(str(e))        
         except FileNotFoundError as e:
             raise CSCRepoInvalidRepoFileException(str(e))

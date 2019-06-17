@@ -13,7 +13,7 @@ from threading import Thread
 from enum import Enum
 from utils import cscutils, const
 from utils.p4helper import P4Helper
-from utils.repo import CSCRepoException, CSCRepoInvalidRepoFileException, CSCRepoInvalidRepoBranchException, CSCRepoFailedToSyncException, CSCRepoFailedToGetLocalPath
+from utils.repo import CSCRepoException, CSCRepoInvalidRepoFileException, CSCRepoInvalidRepoBranchException, CSCRepoFailedToSyncException, CSCRepoFailedToGetWspDirPath
 from utils.cscexception import CSCException, CSCFailOperation
 from utils.xmlutils import XmlHelper, XmlHelperException
 from utils.logutils import Logging, log_error, log_info, log_notice, log_warning
@@ -223,9 +223,19 @@ class CSCChangeListCreator(QMainWindow):
                     csc_file = cscutils.getCSCFileBySale(checkout_file_name, data['sale'])
                     repo_branch = data['repo_branch']
                     repo_file = cscutils.getRepoBranchByFile(repo_branch, checkout_file_name) + csc_file
-                    wsp_branch = cscutils.getWspBranchByFile(self.repo.getLocalDirPath(repo_branch), checkout_file_name)
+                    try:
+                        self.repo.syncFile(repo_file)
+                    except CSCRepoInvalidRepoFileException as e:
+                        pass # file not existed in repo, so will add it in next step
+                    wsp_path = ""
+                    try:
+                        wsp_path = self.repo.getWspDirPath(repo_branch)
+                    except CSCRepoFailedToGetWspDirPath as e:
+                        log_error(str(e))
+                        continue
+                    wsp_branch = cscutils.getWspBranchByFile(wsp_path, checkout_file_name)
                     if not os.path.exists(wsp_branch):
-                        os.mkdir(wsp_branch)
+                        os.makedirs(wsp_branch)
                     wsp_file = wsp_branch + csc_file
                     try:
                         self.repo.checkoutFile( repo_file, wsp_file, data['local_file'], int(changelist))

@@ -22,9 +22,9 @@ class CSCRepoInvalidRepoFileException(CSCRepoInvalidException):
     def __init__(self, message):
         super(CSCRepoInvalidRepoFileException, self).__init__(message)
 
-class CSCRepoFailedToGetLocalPath(CSCRepoFailedException):
+class CSCRepoFailedToGetWspDirPath(CSCRepoFailedException):
     def __init__(self, message):
-        super(CSCRepoFailedToGetLocalPath, self).__init__(message)
+        super(CSCRepoFailedToGetWspDirPath, self).__init__(message)
 
 class CSCRepoConnectionErrorException(CSCRepoFailedException):
     def __init__(self, message):
@@ -57,8 +57,8 @@ class CSCRepo(object):
     def getLocalFilePath(self, repo_file):
         return self.repo.getLocalFilePath(repo_file)
     
-    def getLocalDirPath(self, repo_file):
-        return self.repo.getLocalDirPath(repo_file)
+    def getWspDirPath(self, repo_file):
+        return self.repo.getWspDirPath(repo_file)
 
     def createChangeList(self, description):
         return self.repo.createChangeList(description)
