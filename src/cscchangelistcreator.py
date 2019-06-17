@@ -217,7 +217,7 @@ class CSCChangeListCreator(QMainWindow):
                 if not checkout_flag:
                     CSCChangeListCreator.not_checkout_files.append(f)
             if CSCChangeListCreator.data_files:
-                changelist = self.repo.createChangeList(const.DEFAULT_CHANGELIST_DESCRIPTION)
+                changelist = ''
                 for data in CSCChangeListCreator.data_files:
                     checkout_file_name = self.cb_file_name.currentText()
                     csc_file = cscutils.getCSCFileBySale(checkout_file_name, data['sale'])
@@ -227,6 +227,7 @@ class CSCChangeListCreator(QMainWindow):
                         self.repo.syncFile(repo_file)
                     except CSCRepoInvalidRepoFileException as e:
                         pass # file not existed in repo, so will add it in next step
+                    
                     wsp_path = ""
                     try:
                         wsp_path = self.repo.getWspDirPath(repo_branch)
@@ -237,6 +238,9 @@ class CSCChangeListCreator(QMainWindow):
                     if not os.path.exists(wsp_branch):
                         os.makedirs(wsp_branch)
                     wsp_file = wsp_branch + csc_file
+
+                    if not changelist:
+                        changelist = self.repo.createChangeList(const.DEFAULT_CHANGELIST_DESCRIPTION)
                     try:
                         self.repo.checkoutFile( repo_file, wsp_file, data['local_file'], int(changelist))
                     except CSCRepoInvalidRepoFileException as e:
