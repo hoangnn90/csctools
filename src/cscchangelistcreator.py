@@ -23,7 +23,7 @@ from utils import directoryutils
 
 UI_MAIN_WINDOW = "ui\cscchangelistcreator.ui"
 ICON_FILE = "ui\cscchangelistcreator.png"
-VERSION = "0.01"
+VERSION = "0.02"
 EXTENSION = [{'extension': '.dat', 'directory': 'etc'}] # {extension, directory}
 
 def resource_path(relative_path):

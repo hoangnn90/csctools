@@ -21,3 +21,9 @@ v0.14
 # CSCChangeListCreator
 v0.01
 * Initial version
+
+v0.02
+* Handle exception in case file not map to wsp / not sync to wsp
+* Correct the tool name
+* Update changelist description
+* Create changelist if not error
