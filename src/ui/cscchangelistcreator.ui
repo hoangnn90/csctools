@@ -22,7 +22,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>CSCSearch</string>
+   <string>CSCChangeListCreator</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="maximumSize">
