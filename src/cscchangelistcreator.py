@@ -35,7 +35,6 @@ class CSCChangeListCreator(QMainWindow):
     infos = []  # dict contains sale corresponding with branch
     data_files = []  # dict contains data files will be patched
     not_checkout_files = [] # list contains data files not patched
-    result_files = {}
     def __init__(self):
         super(CSCChangeListCreator, self).__init__()
         self.settings = QSettings('csctools', 'cscchangelistcreator')
@@ -107,9 +106,13 @@ class CSCChangeListCreator(QMainWindow):
         self.te_result.clear()
 
     def onBranchChanged(self):
+        self.te_message.clear()
+        log_error("Branch is changed, please click 'Connect' button to continue!")
         self.pb_search.setEnabled(False)
 
     def onClientWorkspaceChanged(self):
+        self.te_message.clear()
+        log_error("Workspace is changed, please click 'Connect' button to continue!")
         self.pb_search.setEnabled(False)
 
     def validateInput(self):
@@ -167,6 +170,7 @@ class CSCChangeListCreator(QMainWindow):
         return infos
 
     def onConnectBtnClicked(self):
+        CSCChangeListCreator.infos = []
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.te_message.clear()
         self.te_result.clear()
@@ -191,6 +195,8 @@ class CSCChangeListCreator(QMainWindow):
 
 
     def onCreateBtnClicked(self):
+        CSCChangeListCreator.data_files = []
+        CSCChangeListCreator.not_checkout_files = []
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.te_message.clear()
         self.te_result.clear()
@@ -217,7 +223,7 @@ class CSCChangeListCreator(QMainWindow):
                 if not checkout_flag:
                     CSCChangeListCreator.not_checkout_files.append(f)
             if CSCChangeListCreator.data_files:
-                changelist = ''
+                changelist = 0
                 for data in CSCChangeListCreator.data_files:
                     checkout_file_name = self.cb_file_name.currentText()
                     csc_file = cscutils.getCSCFileBySale(checkout_file_name, data['sale'])
@@ -239,13 +245,14 @@ class CSCChangeListCreator(QMainWindow):
                         os.makedirs(wsp_branch)
                     wsp_file = wsp_branch + csc_file
 
-                    if not changelist:
+                    if changelist == 0:
                         changelist = self.repo.createChangeList(const.DEFAULT_CHANGELIST_DESCRIPTION)
                     try:
                         self.repo.checkoutFile( repo_file, wsp_file, data['local_file'], int(changelist))
                     except CSCRepoInvalidRepoFileException as e:
                         log_error(str(e))
-                log_notice("Changelist %d has been created" %(changelist))
+                if changelist != 0:
+                    log_notice("Changelist %d has been created" %(changelist))
                 log_warning("Following file(s) are not checkout %s" %([str(f) for f in CSCChangeListCreator.not_checkout_files]))
             else:
                 log_error("Could not find any sale in branch %s to apply file %s" %(self.le_branch.text(), checkout_file_name))
