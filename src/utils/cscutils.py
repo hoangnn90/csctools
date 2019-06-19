@@ -30,7 +30,7 @@ def getSaleCodeFromKeyStringFile(file):
 def isRepoSaleCodeRootBranch(branch):
     values = branch.split('/')
     sale = getSaleCodeFromBranch(branch)
-    if sale is not None and values[len(values)-2] == sale:
+    if sale is not None and values[len(values)-2] == sale and values[len(values)-3] != 'OMC':
         return True
     return False
 
