@@ -33,3 +33,7 @@ v0.03
 * Remove result box layout
 * Print sale not existed in repo
 * Print not checkout files in data directory
+
+v0.04
+* Fix detect single sale code in OMC wrongly (//PEACE_CSC/Strawberry/EXYNOS5/a50/OMC/BOG/)
+* Fix wrong error message when sale code not found or not find file in data directory
