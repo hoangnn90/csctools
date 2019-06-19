@@ -23,7 +23,7 @@ from utils.repo import CSCRepo
 UI_MAIN_WINDOW = "ui\cscsearch.ui"
 UI_OPEN_RESULT_DIALOG = "ui\cscsearchopenfiledialog.ui"
 ICON_FILE = "ui\cscsearch.png"
-VERSION = "0.14"
+VERSION = "0.15"
 EXTENSIONS = ['.xml']
 
 def resource_path(relative_path):
@@ -345,6 +345,17 @@ class CSCSearch(QMainWindow):
                     # print("tag: %s, value %s, sale %s\n" %(tag, result['value'], result['sale']))
                     out.write('%s%s%s%s\n' % (tag.ljust(tag_ljust_size), result['sale'].ljust(sale_ljust_size), result['value'].ljust(value_ljust_size), result['file']))
         result_files[OpenFileType.TXT] = txt_file
+    
+    def isFoundResult(self, results, values):
+        if not values or values == '*':
+            for r in results:
+                if r['value'] != '-':
+                    return True
+        else:
+            for r in results:
+                if r['value'] in values.rstrip().split(';'):
+                    return True
+        return False
 
     def onSearchBtnClicked(self):
         QApplication.setOverrideCursor(Qt.WaitCursor)
@@ -366,7 +377,7 @@ class CSCSearch(QMainWindow):
             get_result_thread.start()
             get_result_thread.join()
             CSCSearch.results = results
-            if results:
+            if self.isFoundResult(CSCSearch.results, self.le_tag_values.text()):
                 # log_notice('Writing result to file ...')
                 write_output_thread = Thread(target=self.writeOutput, args=(CSCSearch.results, CSCSearch.result_files))
                 write_output_thread.start()
@@ -383,7 +394,7 @@ class CSCSearch(QMainWindow):
                 if do_not_show_cb_setting is None or do_not_show_cb_setting == 'false':
                     self.open_file_dialog.show()
             else:
-                log_notice('Search is finished. Please check error message!')
+                log_notice('Search is finished. No result found!')
         QApplication.restoreOverrideCursor()
 
 if __name__ == '__main__':

@@ -18,6 +18,9 @@ v0.13
 v0.14
 * Separate tag values by ';'
 
+v0.15
+* Fix bug show result dialog event result not found
+
 # CSCChangeListCreator
 v0.01
 * Initial version
