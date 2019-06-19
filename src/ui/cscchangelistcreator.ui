@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1366</width>
+    <width>623</width>
     <height>728</height>
    </rect>
   </property>
@@ -220,67 +220,6 @@ QGroupBox::title
      </property>
     </widget>
    </widget>
-   <widget class="QGroupBox" name="groupBox_2">
-    <property name="geometry">
-     <rect>
-      <x>620</x>
-      <y>10</y>
-      <width>731</width>
-      <height>661</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QGroupBox {
-    background-color:rgb(211, 211, 211);
-	font-size: 11px;
-    font-weight: bold;
-}
-QGroupBox::title
-{
-    subcontrol-origin: margin;
-    subcontrol-position: top left;
-    padding: 0px;
-    padding-left: 5px;
-    color:blue
-}</string>
-    </property>
-    <property name="title">
-     <string>Results</string>
-    </property>
-    <widget class="QScrollArea" name="scrollArea_2">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>711</width>
-       <height>631</height>
-      </rect>
-     </property>
-     <property name="widgetResizable">
-      <bool>true</bool>
-     </property>
-     <widget class="QWidget" name="scrollAreaWidgetContents_2">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>709</width>
-        <height>629</height>
-       </rect>
-      </property>
-      <widget class="QTextEdit" name="te_result">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>10</y>
-         <width>691</width>
-         <height>611</height>
-        </rect>
-       </property>
-      </widget>
-     </widget>
-    </widget>
-   </widget>
    <widget class="QGroupBox" name="groupBox_3">
     <property name="geometry">
      <rect>
@@ -318,7 +257,7 @@ QGroupBox::title
       </rect>
      </property>
      <property name="text">
-      <string>Sales</string>
+      <string>Sales (separated by ;)</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_tag_name">
@@ -335,6 +274,9 @@ QGroupBox::title
      </property>
     </widget>
     <widget class="QLineEdit" name="le_directory">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>90</x>
@@ -361,6 +303,9 @@ QGroupBox::title
      </property>
     </widget>
     <widget class="QComboBox" name="cb_file_name">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>490</x>
@@ -376,11 +321,14 @@ QGroupBox::title
      </item>
     </widget>
     <widget class="QLineEdit" name="le_sales">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
-       <x>90</x>
+       <x>130</x>
        <y>50</y>
-       <width>501</width>
+       <width>461</width>
        <height>20</height>
       </rect>
      </property>
@@ -496,7 +444,7 @@ QGroupBox::title
    <widget class="QLabel" name="label_author">
     <property name="geometry">
      <rect>
-      <x>1310</x>
+      <x>570</x>
       <y>670</y>
       <width>41</width>
       <height>20</height>

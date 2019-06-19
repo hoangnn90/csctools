@@ -10,7 +10,7 @@ NOTICE = "NOTICE"
 
 LOG_COLOR = {
     INFO: "<font color=\"Black\">",
-    WARNING: "<font color=\"Gold\">",
+    WARNING: "<font color=\"Magenta\">",
     ERROR: "<font color=\"Red\">",
     NOTICE: "<font color=\"Blue\">",
     }

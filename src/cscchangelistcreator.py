@@ -11,7 +11,7 @@ import time
 import subprocess
 from threading import Thread
 from enum import Enum
-from utils import cscutils, const
+from utils import cscutils, const, dictsutils, directoryutils
 from utils.p4helper import P4Helper
 from utils.repo import CSCRepoException, CSCRepoInvalidRepoFileException, CSCRepoInvalidRepoBranchException, CSCRepoFailedToSyncException, CSCRepoFailedToGetWspDirPath
 from utils.cscexception import CSCException, CSCFailOperation
@@ -19,11 +19,10 @@ from utils.xmlutils import XmlHelper, XmlHelperException
 from utils.logutils import Logging, log_error, log_info, log_notice, log_warning
 from utils.stringutils import isNotBlank
 from utils.repo import CSCRepo
-from utils import directoryutils
 
 UI_MAIN_WINDOW = "ui\cscchangelistcreator.ui"
 ICON_FILE = "ui\cscchangelistcreator.png"
-VERSION = "0.02"
+VERSION = "0.03"
 EXTENSION = [{'extension': '.dat', 'directory': 'etc'}] # {extension, directory}
 
 def resource_path(relative_path):
@@ -34,7 +33,8 @@ def resource_path(relative_path):
 class CSCChangeListCreator(QMainWindow):
     infos = []  # dict contains sale corresponding with branch
     data_files = []  # dict contains data files will be patched
-    not_checkout_files = [] # list contains data files not patched
+    files_not_checkout = [] # list contains data files not patched
+    requested_sale_info = [] # list contains sale not found in repo / not found data file in local
     def __init__(self):
         super(CSCChangeListCreator, self).__init__()
         self.settings = QSettings('csctools', 'cscchangelistcreator')
@@ -95,20 +95,20 @@ class CSCChangeListCreator(QMainWindow):
 
     def onFileNameChanged(self):
         self.te_message.clear()
-        self.te_result.clear()
 
     def onDataDirectoryChanged(self):
-        self.te_message.clear()
-        self.te_result.clear()
+        pass
     
     def onSalesChanged(self):
-        self.te_message.clear()
-        self.te_result.clear()
+        pass
 
     def onBranchChanged(self):
         self.te_message.clear()
         log_error("Branch is changed, please click 'Connect' button to continue!")
         self.pb_search.setEnabled(False)
+        self.le_sales.setEnabled(False)
+        self.le_directory.setEnabled(False)
+        self.cb_file_name.setEnabled(False)
 
     def onClientWorkspaceChanged(self):
         self.te_message.clear()
@@ -147,7 +147,7 @@ class CSCChangeListCreator(QMainWindow):
             return False
         return True
 
-    def getDepotDataInfo(self, infos):
+    def getRepoDataInfo(self, infos):
         branch = self.le_branch.text()
         branchs = []
         found = False
@@ -173,18 +173,21 @@ class CSCChangeListCreator(QMainWindow):
         CSCChangeListCreator.infos = []
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.te_message.clear()
-        self.te_result.clear()
         if self.validateInput():
             try:
                 self.connecToPerforce()
                 infos = []
-                collect_sale_thread = Thread(target=self.getDepotDataInfo, args=[infos])
+                collect_sale_thread = Thread(target=self.getRepoDataInfo, args=[infos])
                 collect_sale_thread.start()
                 collect_sale_thread.join()
                 CSCChangeListCreator.infos = infos
                 log_notice("Connection is established succesfully. Click 'Create' button to create change list!")
+                self.le_sales.setEnabled(True)
+                self.le_directory.setEnabled(True)
+                self.cb_file_name.setEnabled(True)
             except CSCRepoException as e:
                 log_error(str(e))
+            
         QApplication.restoreOverrideCursor()
 
     def validateOptions(self):
@@ -193,13 +196,12 @@ class CSCChangeListCreator(QMainWindow):
             return False
         return True
 
-
     def onCreateBtnClicked(self):
         CSCChangeListCreator.data_files = []
-        CSCChangeListCreator.not_checkout_files = []
+        CSCChangeListCreator.files_not_checkout = []
+        CSCChangeListCreator.requested_sale_info = []
         QApplication.setOverrideCursor(Qt.WaitCursor)
         self.te_message.clear()
-        self.te_result.clear()
         if self.validateOptions():
             files = []
             directory = self.le_directory.text()
@@ -210,22 +212,33 @@ class CSCChangeListCreator(QMainWindow):
                 log_error("Could not find file with extension %s in directory %s" %(EXTENSION[0]['extension'], directory))
                 QApplication.restoreOverrideCursor()
                 return
+            requested_sales = self.le_sales.text()
+            if (len(requested_sales) != 0) and (requested_sales != '*'):
+                for sale in requested_sales.rstrip().split(';'):
+                    sale_info = {'sale': sale, 'checkout': False, 'on_repo': False, 'on_data_directory': False}
+                    for info in CSCChangeListCreator.infos:
+                        if info['sale'] == sale:
+                            sale_info['on_repo'] = True
+                            break
+                        if info == CSCChangeListCreator.infos[len(CSCChangeListCreator.infos)-1]:
+                            sale_info['on_repo'] = False
+                    CSCChangeListCreator.requested_sale_info.append(sale_info)
             for f in files:
                 checkout_flag = False
                 file_full_name = os.path.join(directory, f)
                 sale = cscutils.getSaleCodeFromKeyStringFile(f)
                 for info in CSCChangeListCreator.infos:
-                    if info['sale'] == sale:
+                    if ((not CSCChangeListCreator.requested_sale_info) or (dictsutils.isExisted(CSCChangeListCreator.requested_sale_info, 'sale', sale))) and info['sale'] == sale:
                         checkout_flag = True
                         data = info.copy()
                         data['local_file'] = file_full_name
                         CSCChangeListCreator.data_files.append(data)
                 if not checkout_flag:
-                    CSCChangeListCreator.not_checkout_files.append(f)
+                    CSCChangeListCreator.files_not_checkout.append(f)
+            checkout_file_name = self.cb_file_name.currentText()
             if CSCChangeListCreator.data_files:
                 changelist = 0
                 for data in CSCChangeListCreator.data_files:
-                    checkout_file_name = self.cb_file_name.currentText()
                     csc_file = cscutils.getCSCFileBySale(checkout_file_name, data['sale'])
                     repo_branch = data['repo_branch']
                     repo_file = cscutils.getRepoBranchByFile(repo_branch, checkout_file_name) + csc_file
@@ -253,7 +266,15 @@ class CSCChangeListCreator(QMainWindow):
                         log_error(str(e))
                 if changelist != 0:
                     log_notice("Changelist %d has been created" %(changelist))
-                log_warning("Following file(s) are not checkout %s" %([str(f) for f in CSCChangeListCreator.not_checkout_files]))
+                sales_not_found_in_repo = []
+                for d in CSCChangeListCreator.requested_sale_info:
+                    if d['on_repo'] == False:
+                        sales_not_found_in_repo.append(d['sale'])
+                if sales_not_found_in_repo:
+                    log_warning("Following sale(s) not found in repo %s" %(sales_not_found_in_repo))
+                
+                if CSCChangeListCreator.files_not_checkout:
+                    log_warning("Following file(s) are in data directory but not checkout %s" %([str(f) for f in CSCChangeListCreator.files_not_checkout]))
             else:
                 log_error("Could not find any sale in branch %s to apply file %s" %(self.le_branch.text(), checkout_file_name))
         QApplication.restoreOverrideCursor()

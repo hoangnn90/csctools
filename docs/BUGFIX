@@ -27,3 +27,9 @@ v0.02
 * Correct the tool name
 * Update changelist description
 * Create changelist if not error
+
+v0.03
+* Fix error that store log of previous Create trial
+* Remove result box layout
+* Print sale not existed in repo
+* Print not checkout files in data directory
