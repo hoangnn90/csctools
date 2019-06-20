@@ -22,7 +22,7 @@ from utils.repo import CSCRepo
 
 UI_MAIN_WINDOW = "ui\cscchangelistcreator.ui"
 ICON_FILE = "ui\cscchangelistcreator.png"
-VERSION = "0.04"
+VERSION = "0.05"
 EXTENSION = [{'extension': '.dat', 'directory': 'etc'}] # {extension, directory}
 
 def resource_path(relative_path):
@@ -273,8 +273,8 @@ class CSCChangeListCreator(QMainWindow):
                 if sales_not_found_in_repo:
                     log_warning("Following sale(s) not found in repo %s" %(sales_not_found_in_repo))
                 
-                if CSCChangeListCreator.files_not_checkout:
-                    log_warning("Following file(s) are in data directory but not found CSC in repo %s" %([str(f) for f in CSCChangeListCreator.files_not_checkout]))
+                # if CSCChangeListCreator.files_not_checkout:
+                    # log_warning("Following file(s) are in data directory but not found CSC in repo %s" %([str(f) for f in CSCChangeListCreator.files_not_checkout]))
             else:
                 log_error("Sale code not found in repo or file %s not found in data directory %s" %(checkout_file_name, self.le_directory.text()))
         QApplication.restoreOverrideCursor()
