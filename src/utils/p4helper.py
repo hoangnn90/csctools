@@ -8,7 +8,7 @@ from p4swamp import p4, P4Error
 from utils import logutils, const, repo
 from utils.salecode import sales
 
-from utils.repo import CSCRepo, CSCRepoException, CSCRepoInvalidRepoFileException, CSCRepoInvalidRepoBranchException, CSCRepoFailedToSyncException, CSCRepoFailedToGetWspDirPath, CSCRepoConnectionErrorException
+from utils.repo import CSCRepo, CSCRepoException, CSCRepoInvalidRepoFileException, CSCRepoInvalidRepoBranchException, CSCRepoFailedToSyncException, CSCRepoFailedToGetWspDirPath, CSCRepoConnectionErrorException, CSCRepoFailedToGetClientWorkspace
 
 class P4Helper(CSCRepo):
     """ Helper class provide method to manipulate P4 data
@@ -29,6 +29,8 @@ class P4Helper(CSCRepo):
     def connect(self):
         try:
             self.setClient(self.p4.client)
+            self.setUser(self.p4.user)
+            self.setPort(self.p4.port)
             self.p4.connect()
             self.p4.run_login()
         except P4Exception as e:
@@ -53,7 +55,7 @@ class P4Helper(CSCRepo):
             else:
                 dicts = self.p4.run("clients", options)
         except P4Exception as e:
-            raise P4FailedToGetClientWorkspace("Failed to get client workspace, error %s" %(str(e)))
+            raise CSCRepoFailedToGetClientWorkspace("Failed to get client workspace, error %s" %(str(e)))
         for d in dicts:
             clients.append(d['client'])
         return clients
@@ -62,6 +64,16 @@ class P4Helper(CSCRepo):
         """ Set P4CLIENT with @client
         """
         self.p4.set_env('P4CLIENT', client)
+
+    def setUser(self, user):
+        """ Set P4USER with @user
+        """
+        self.p4.set_env('P4USER', user)
+
+    def setPort(self, port):
+        """ Set P4PORT with @port
+        """
+        self.p4.set_env('P4PORT', port)
 
     def getFileNameFromPath(self, file):
         """Get file name from @file path

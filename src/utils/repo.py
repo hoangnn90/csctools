@@ -30,9 +30,9 @@ class CSCRepoConnectionErrorException(CSCRepoFailedException):
     def __init__(self, message):
         super(CSCRepoConnectionErrorException, self).__init__(message)
 
-class P4FailedToGetClientWorkspace(CSCRepoFailedException):
+class CSCRepoFailedToGetClientWorkspace(CSCRepoFailedException):
     def __init__(self, message):
-        super(P4FailedToGetClientWorkspace, self).__init__(message)
+        super(CSCRepoFailedToGetClientWorkspace, self).__init__(message)
 
 
 class CSCRepo(object):
