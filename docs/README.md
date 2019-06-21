@@ -63,7 +63,7 @@ Link: <https://cdist2.perforce.com/perforce/r18.2/bin.ntx64/helix-core-server-x6
   + Usage: <https://pyinstaller.readthedocs.io/en/stable/usage.html>
 
 - Build cscsearch
-  + Go to folder contain .py file 
+  + Go to folder contain cscsearch.py file 
   + Enter below cmd:
     + Without compress
     ```cmd
@@ -74,7 +74,7 @@ Link: <https://cdist2.perforce.com/perforce/r18.2/bin.ntx64/helix-core-server-x6
     pyinstaller --debug --clean --onefile --nowindowed --upx-dir G:\working\CSCTool\tools\upx-3.95-win64\upx-3.95-win64 --add-data "./ui/cscsearch.png;./ui" --add-data "./ui/cscsearch.ui;./ui" --add-data "./ui/cscsearchopenfiledialog.ui;./ui" cscsearch.py
     ```
 - Build cscchangelistcreator
-  + Go to folder contain .py file 
+  + Go to folder contain cscchangelistcreator.py file 
   + Enter below cmd:
     + Without compress
     ```cmd
@@ -83,6 +83,17 @@ Link: <https://cdist2.perforce.com/perforce/r18.2/bin.ntx64/helix-core-server-x6
     + With compress
     ```cmd
     pyinstaller --debug --clean --onefile --nowindowed --upx-dir G:\working\CSCTool\tools\upx-3.95-win64\upx-3.95-win64 --add-data "./ui/cscchangelistcreator.png;./ui" --add-data "./ui/cscchangelistcreator.ui;./ui" cscchangelistcreator.py
+    ```
+- Build cscvalidator
+  + Go to folder contain cscvalidator.py file 
+  + Enter below cmd:
+    + Without compress
+    ```cmd
+    pyinstaller --debug --clean --onefile --nowindowed --add-data "./ui/cscvalidator.png;./ui" --add-data "./ui/cscvalidator.ui;./ui" cscvalidator.py
+    ```
+    + With compress
+    ```cmd
+    pyinstaller --debug --clean --onefile --nowindowed --upx-dir G:\working\CSCTool\tools\upx-3.95-win64\upx-3.95-win64 --add-data "./ui/cscvalidator.png;./ui" --add-data "./ui/cscvalidator.ui;./ui" cscvalidator.py
     ```
 # 4. Run & Debug
 ## Enable debug log
@@ -95,6 +106,7 @@ Link: <https://cdist2.perforce.com/perforce/r18.2/bin.ntx64/helix-core-server-x6
 
 ![](run.png)
 
+# 5. Error handling
 ## Setup client workspace
 In case of getting error 'Client `CLIENT_NAME` unknow', enter following cmds:
 ```cmd
@@ -109,5 +121,13 @@ In case of getting error due to using old P4 server, enter following cmds.
 - Replace serveraddr & port
 ```cmd
 p4 set P4PORT=serveraddr:port
+```
+- Enter ```p4 info``` to verify
+
+## Change P4 user
+In case of getting error 'Access for user `USER`  has not been enabled by 'p4 protect':
+
+```cmd
+p4 set P4USER=USER
 ```
 - Enter ```p4 info``` to verify

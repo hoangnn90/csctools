@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>600</height>
+    <height>693</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -25,7 +25,7 @@
      <x>9</x>
      <y>16</y>
      <width>781</width>
-     <height>601</height>
+     <height>671</height>
     </rect>
    </property>
    <property name="maximumSize">
@@ -101,7 +101,7 @@
       <x>10</x>
       <y>220</y>
       <width>761</width>
-      <height>331</height>
+      <height>431</height>
      </rect>
     </property>
     <property name="widgetResizable">
@@ -113,7 +113,7 @@
        <x>0</x>
        <y>0</y>
        <width>759</width>
-       <height>329</height>
+       <height>429</height>
       </rect>
      </property>
      <widget class="QTextEdit" name="te_message">
@@ -122,7 +122,7 @@
         <x>10</x>
         <y>10</y>
         <width>741</width>
-        <height>311</height>
+        <height>411</height>
        </rect>
       </property>
      </widget>
@@ -138,7 +138,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>//depot/</string>
+     <string>//PEACE_CSC//</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="le_user">
@@ -471,7 +471,7 @@ QGroupBox::title
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>550</y>
+      <y>650</y>
       <width>151</width>
       <height>20</height>
      </rect>
@@ -484,7 +484,7 @@ QGroupBox::title
     <property name="geometry">
      <rect>
       <x>730</x>
-      <y>550</y>
+      <y>650</y>
       <width>41</width>
       <height>20</height>
      </rect>

@@ -120,7 +120,7 @@ class P4Helper(CSCRepo):
             files.append(file_dict['depotFile'])
         return files
 
-    def isDepotFile(self, depot_file):
+    def isRepoFile(self, depot_file):
         """Verify if @depot_file is existed in P4 depot
         """
         if not depot_file:
@@ -136,7 +136,7 @@ class P4Helper(CSCRepo):
             Note: p4 where does not check file exists is local or not.
             So local path of file that already removed from depot will also found
         """
-        if self.isDepotFile(depot_file) is True:
+        if self.isRepoFile(depot_file) is True:
             file_infos = {}
             try:
                 file_infos = p4('where', depot_file)
@@ -168,7 +168,7 @@ class P4Helper(CSCRepo):
             Note: p4 sync command try to map file even if it is already removed from depot
             Use option -q to suppress normal output messages. Messages describing errors or exceptional conditions are not suppressed.
         """
-        if self.isDepotFile(depot_file) is True:
+        if self.isRepoFile(depot_file) is True:
             try:
                 p4('sync', '-f', '-q', depot_file + '#head')
             except P4Error as e:

@@ -285,11 +285,11 @@ class CSCSearch(QMainWindow):
         sale = self.cb_sale.currentText()
         for info in infos:
             if (sale == 'All') or (sale != 'All' and info['sale'] == sale):
-                depot_file = info['file']
+                repo_file = info['file']
                 local_file = ''
                 try:
-                    self.repo.syncFile(depot_file)
-                    local_file = self.repo.getLocalFilePath(depot_file)
+                    self.repo.syncFile(repo_file)
+                    local_file = self.repo.getLocalFilePath(repo_file)
                 except CSCRepoFailedException as e:
                     log_warning(str(e))
                     continue

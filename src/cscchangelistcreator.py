@@ -13,12 +13,11 @@ from threading import Thread
 from enum import Enum
 from utils import cscutils, const, dictsutils, directoryutils
 from utils.p4helper import P4Helper
-from utils.repo import CSCRepoException, CSCRepoInvalidRepoFileException, CSCRepoInvalidRepoBranchException, CSCRepoFailedToSyncException, CSCRepoFailedToGetWspDirPath
+from utils.repo import CSCRepo, CSCRepoException, CSCRepoInvalidRepoFileException, CSCRepoInvalidRepoBranchException, CSCRepoFailedToSyncException, CSCRepoFailedToGetWspDirPath
 from utils.cscexception import CSCException, CSCFailOperation
 from utils.xmlutils import XmlHelper, XmlHelperException
 from utils.logutils import Logging, log_error, log_info, log_notice, log_warning
 from utils.stringutils import isNotBlank
-from utils.repo import CSCRepo
 
 UI_MAIN_WINDOW = "ui\cscchangelistcreator.ui"
 ICON_FILE = "ui\cscchangelistcreator.png"
@@ -181,7 +180,7 @@ class CSCChangeListCreator(QMainWindow):
                     collect_sale_thread.start()
                     collect_sale_thread.join()
                     CSCChangeListCreator.infos = infos
-                    log_notice("Connection is established succesfully. Click 'Create' button to create change list!")
+                    log_notice("Connection is established successfully. Click 'Create' button to create change list!")
                     self.le_sales.setEnabled(True)
                     self.le_directory.setEnabled(True)
                     self.cb_file_name.setEnabled(True)

@@ -65,3 +65,6 @@ class CSCRepo(object):
 
     def checkoutFile(self, repo_file, wsp_file, local_file, changelist):
         self.repo.checkoutFile(repo_file, wsp_file, local_file, changelist)
+
+    def isRepoFile(self, repo_file):
+        return self.repo.isRepoFile(repo_file)

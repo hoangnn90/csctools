@@ -302,7 +302,7 @@ class XmlHelper(LineNumberingParser):
                         if found:
                             break
                     if found is False:
-                        print("Profile '%s' of NetworkName '%s' is declared in ProfileHandle but not implemented in '%s'" %(prof_name[1], network_name , file))
+                        logutils.log_error("Profile '%s' of NetworkName '%s' is declared in ProfileHandle but not implemented in '%s'" %(prof_name[1], network_name , file))
 
 
     def validateProfileHandle(self, file, info):
