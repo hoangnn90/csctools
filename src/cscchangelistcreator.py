@@ -22,7 +22,7 @@ from utils.repo import CSCRepo
 
 UI_MAIN_WINDOW = "ui\cscchangelistcreator.ui"
 ICON_FILE = "ui\cscchangelistcreator.png"
-VERSION = "0.05"
+VERSION = "0.06"
 EXTENSION = [{'extension': '.dat', 'directory': 'etc'}] # {extension, directory}
 
 def resource_path(relative_path):
@@ -175,16 +175,16 @@ class CSCChangeListCreator(QMainWindow):
         self.te_message.clear()
         if self.validateInput():
             try:
-                self.connecToPerforce()
-                infos = []
-                collect_sale_thread = Thread(target=self.getRepoDataInfo, args=[infos])
-                collect_sale_thread.start()
-                collect_sale_thread.join()
-                CSCChangeListCreator.infos = infos
-                log_notice("Connection is established succesfully. Click 'Create' button to create change list!")
-                self.le_sales.setEnabled(True)
-                self.le_directory.setEnabled(True)
-                self.cb_file_name.setEnabled(True)
+                if self.connecToPerforce():
+                    infos = []
+                    collect_sale_thread = Thread(target=self.getRepoDataInfo, args=[infos])
+                    collect_sale_thread.start()
+                    collect_sale_thread.join()
+                    CSCChangeListCreator.infos = infos
+                    log_notice("Connection is established succesfully. Click 'Create' button to create change list!")
+                    self.le_sales.setEnabled(True)
+                    self.le_directory.setEnabled(True)
+                    self.cb_file_name.setEnabled(True)
             except CSCRepoException as e:
                 log_error(str(e))
             

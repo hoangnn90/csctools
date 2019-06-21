@@ -47,3 +47,4 @@ v0.05
 v0.06
 * Fix error 'Access for user USER  has not been enabled by 'p4 protect'
 * Fix error change server address
+* Fix bug connect failed but still print success message
