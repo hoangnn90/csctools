@@ -1,0 +1,8 @@
+<CSCRules>
+    <Condition name="">
+        <Key>NetworkName</Key>
+        <Value>Vodafone</Value>
+        <Require></Require>
+        <Value></Value>
+    </Condition>
+</CSCRules>

@@ -1,0 +1,14 @@
+<CSCRules>
+    <Rule>
+        <Parent>NetworkInfo</Parent>
+        <Child>MCCMNC,NetworkName,NWID</Child>
+    </Rule>
+    <Rule>
+        <Parent>Security</Parent>
+        <Child>NetworkLock</Child>
+    </Rule>
+    <Rule>
+        <Parent>Bookmark</Parent>
+        <Child>NetworkName,Editable,BookmarkName,URL</Child>
+    </Rule>
+</CSCRules>

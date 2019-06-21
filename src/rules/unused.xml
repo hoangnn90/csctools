@@ -1,0 +1,83 @@
+<CSCRules>
+    <Rule name="Shortcut">
+    </Rule>
+    <Rule name="CscFeature_Setting_ConfigAddSuffixModelNumber">
+        <SimType>SS</SimType>
+    </Rule>
+    <Rule name="IMSSetting">
+        <ImsSupported>no</ImsSupported>
+    </Rule>
+    <Rule name="CscFeature_Setting_SupportWiFiCallingMenu">
+        <ImsSupported>no</ImsSupported>
+    </Rule>
+    <Rule name="CscFeature_Setting_SupportWiFiCall">
+        <ImsSupported>no</ImsSupported>
+    </Rule>
+    <Rule name="CscFeature_RIL*">
+        <DeviceType>WiFi</DeviceType>
+    </Rule>
+    <Rule name="CscFeature_IMS*">
+        <DeviceType>WiFi</DeviceType>
+    </Rule>
+    <Rule name="CscFeature_Setting_SupportWiFiCallingMenu">
+        <DeviceType>WiFi</DeviceType>
+    </Rule>
+    <Rule name="CscFeature_Setting_SupportWiFiCall">
+        <DeviceType>WiFi</DeviceType>
+    </Rule>
+    <Rule name="CscFeature_Setting_HideApnList">
+        <DeviceType>WiFi</DeviceType>
+    </Rule>
+    <Rule name="CscFeature_Web_EnableAutoBookmarkSetBySim">
+        <DeviceType>WiFi</DeviceType>
+    </Rule>
+    <Rule name="CscFeature_Launcher_DefaultPageNumber">
+        <ProjectType>RA</ProjectType>
+    </Rule>
+    <Rule name="CscFeature_Launcher_TotalPageCount">
+        <ProjectType>RA</ProjectType>
+    </Rule>
+    <Rule name="NbMaxPDP"></Rule>
+    <Rule name="MaxPDP"></Rule>
+    <Rule name="MinuteMind"></Rule>
+    <Rule name="T9Enabling"></Rule>
+    <Rule name="AutoReplacement"></Rule>
+    <Rule name="BackLightDimTime"></Rule>
+    <Rule name="WorldTime"></Rule>
+    <Rule name="DateTimeFormat"></Rule>
+    <Rule name="UnknownSource"></Rule>
+    <Rule name="CallNoiseReduction"></Rule>
+    <Rule name="SmartStay"></Rule>
+    <!-- <Rule name="DirectCall">
+        <Info name="Make sure to support DirectCall, model need support 3 sensors: proxy, accel, gyro "></Info>
+    </Rule> -->
+    <Rule name="DoubleTapToTop"></Rule>
+    <Rule name="FontSizeByVolumeKey"></Rule>
+    <Rule name="Activation">
+        <!-- <ParentTag>BT</ParentTag> -->
+    </Rule>
+    <Rule name="SleepPolicy"></Rule>
+    <Rule name="Quality">
+        <!-- <ParentTag>Camera</ParentTag> -->
+    </Rule>
+    <Rule name="BurstShot"></Rule>
+    <!-- <Rule name="Quality">
+        <ParentTag>Video</ParentTag>
+    </Rule>
+    <Rule name="Quality">
+        <ParentTag>VoiceRecorder</ParentTag>
+    </Rule> -->
+    <Rule name="Expiry"></Rule>
+    <Rule name="ReqReadRep">
+        <!-- <ParentTag>MmsSending</ParentTag> -->
+    </Rule>
+    <Rule name="ReqDeliveryRep">
+        <!-- <ParentTag>MmsSending</ParentTag> -->
+    </Rule>
+    <Rule name="Index">
+        <!-- <ParentTag>Bookmark</ParentTag> -->
+    </Rule>
+    <Rule name="Shortcut"></Rule>
+    <Rule name="MMSVersion"></Rule>
+    <Rule name="CSparam"></Rule>
+</CSCRules>

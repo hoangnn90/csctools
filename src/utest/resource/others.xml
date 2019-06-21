@@ -1,0 +1,9 @@
+<FeatureSet>
+    <CscFeature_Setting_HideApnList>true</CscFeature_Setting_HideApnList>
+    <CscFeature_Setting_SupportWiFiCallingMenu>true</CscFeature_Setting_SupportWiFiCallingMenu>
+    <CscFeature_Setting_SupportWiFiCall>true</CscFeature_Setting_SupportWiFiCall>
+    <CscFeature_Web_EnableAutoBookmarkSetBySim>true</CscFeature_Web_EnableAutoBookmarkSetBySim>
+    <CscFeature_Launcher_DefaultPageNumber>1</CscFeature_Launcher_DefaultPageNumber>
+    <CscFeature_Launcher_TotalPageCount>4</CscFeature_Launcher_TotalPageCount>
+    <CscFeature_Setting_ConfigAddSuffixModelNumber>true</CscFeature_Setting_ConfigAddSuffixModelNumber>
+</FeatureSet>

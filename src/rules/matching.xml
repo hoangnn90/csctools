@@ -1,0 +1,6 @@
+<CSCRules>
+    <Rule>
+        <Declaration>ProfBrowser</Declaration>
+        <Implementation>ProfileName</Implementation>
+    </Rule>
+</CSCRules>
