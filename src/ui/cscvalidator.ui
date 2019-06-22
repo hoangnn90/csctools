@@ -215,12 +215,12 @@
     </item>
     <item>
      <property name="text">
-      <string>csc_feature.xml</string>
+      <string>cscfeature_plain.xml</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>csc_feature_network.xml</string>
+      <string>cscfeature_network_plain.xml</string>
      </property>
     </item>
     <item>

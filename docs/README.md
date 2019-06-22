@@ -89,11 +89,11 @@ Link: <https://cdist2.perforce.com/perforce/r18.2/bin.ntx64/helix-core-server-x6
   + Enter below cmd:
     + Without compress
     ```cmd
-    pyinstaller --debug --clean --onefile --nowindowed --add-data "./ui/cscvalidator.png;./ui" --add-data "./ui/cscvalidator.ui;./ui" cscvalidator.py
+    pyinstaller --debug --clean --onefile --nowindowed --add-data "./ui/cscvalidator.png;./ui" --add-data "./ui/cscvalidator.ui;./ui" --add-data "./rules/condition.xml;./rules" --add-data "./rules/matching.xml;./rules" --add-data "./rules/measurement.xml;./rules" --add-data "./rules/parentchild.xml;./rules" --add-data "./rules/unused.xml;./rules" cscvalidator.py
     ```
     + With compress
     ```cmd
-    pyinstaller --debug --clean --onefile --nowindowed --upx-dir G:\working\CSCTool\tools\upx-3.95-win64\upx-3.95-win64 --add-data "./ui/cscvalidator.png;./ui" --add-data "./ui/cscvalidator.ui;./ui" cscvalidator.py
+    pyinstaller --debug --clean --onefile --nowindowed --upx-dir G:\working\CSCTool\tools\upx-3.95-win64\upx-3.95-win64 --add-data "./ui/cscvalidator.png;./ui" --add-data "./ui/cscvalidator.ui;./ui" --add-data "./rules/condition.xml;./rules" --add-data "./rules/matching.xml;./rules" --add-data "./rules/measurement.xml;./rules" --add-data "./rules/parentchild.xml;./rules" --add-data "./rules/unused.xml;./rules" cscvalidator.py
     ```
 # 4. Run & Debug
 ## Enable debug log

@@ -23,7 +23,7 @@ from utils.repo import CSCRepo
 UI_MAIN_WINDOW = "ui\cscsearch.ui"
 UI_OPEN_RESULT_DIALOG = "ui\cscsearchopenfiledialog.ui"
 ICON_FILE = "ui\cscsearch.png"
-VERSION = "0.15"
+VERSION = "0.16"
 EXTENSIONS = ['.xml']
 
 def resource_path(relative_path):
@@ -288,8 +288,9 @@ class CSCSearch(QMainWindow):
                 repo_file = info['file']
                 local_file = ''
                 try:
-                    self.repo.syncFile(repo_file)
-                    local_file = self.repo.getLocalFilePath(repo_file)
+                    if self.repo.isRepoFile(repo_file):
+                        self.repo.syncFile(repo_file)
+                        local_file = self.repo.getLocalFilePath(repo_file)
                 except CSCRepoFailedException as e:
                     log_warning(str(e))
                     continue

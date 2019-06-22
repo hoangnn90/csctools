@@ -21,6 +21,9 @@ v0.14
 v0.15
 * Fix bug show result dialog event result not found
 
+v0.16
+* Fix bug sync file not existed in repo
+
 # CSCChangeListCreator
 v0.01
 * Initial version
@@ -52,3 +55,7 @@ v0.06
 # CSCValidator
 v0.01
 * Initial version
+
+v0.02
+* Validate plain text for cscfeature & cscfeature_network
+* Fix bug sync file not existed in repo

@@ -17,7 +17,7 @@ from utils.cscrulevalidator import CscRuleValidatorException
 from utils.stringutils import isNotBlank
 
 
-VERSION = "0.01"
+VERSION = "0.02"
 UI_FILE = "ui\cscvalidator.ui"
 ICON_FILE = "ui\cscvalidator.png"
 
@@ -106,8 +106,8 @@ class CSCValidator(QtWidgets.QDialog):
             const.unusedtag_rule,
             const.profilehandle_rule
         ])
-        map.add(const.csc_feature, [const.unusedtag_rule])
-        map.add(const.csc_feature_network, [const.unusedtag_rule])
+        map.add(const.cscfeature, [const.unusedtag_rule])
+        map.add(const.cscfeature_network, [const.unusedtag_rule])
         map.add(const.default_application_order, [const.unusedtag_rule])
         map.add(const.default_workspace, [const.unusedtag_rule])
         map.add(const.apps, [const.unusedtag_rule])
@@ -239,13 +239,14 @@ class CSCValidator(QtWidgets.QDialog):
             for info in infos:
                 if (sale == 'All') or (sale != 'All' and info['sale'] == sale):
                     repo_file = info['branch'] + rule_file
-                    self.repo.syncFile(repo_file)
-                    for rule in rules:
-                        try:
-                            local_path = self.repo.getLocalFilePath(repo_file)
-                            self.m_provider.execute(rule, local_path, {})
-                        except CSCRepoException as e:
-                            log_error("Could not find local file of %s. Error is %s" %(repo_file, str(e)))
+                    if self.repo.isRepoFile(repo_file):
+                        self.repo.syncFile(repo_file)
+                        for rule in rules:
+                            try:
+                                local_path = self.repo.getLocalFilePath(repo_file)
+                                self.m_provider.execute(rule, local_path, {})
+                            except CSCRepoException as e:
+                                log_error("Could not find local file of %s. Error is %s" %(repo_file, str(e)))
             log_notice("Validation is done. Please check above error(s) if any!")
         except CscRuleMapException:
             log_error("Rule file '%s' is not setup. Please check setupRuleMap()" % (rule_file))
