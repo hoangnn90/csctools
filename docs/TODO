@@ -9,4 +9,4 @@
 - Extend to support other CSC file type
 
 # CSCValidator
-- Extend rules to rules/condition.xml, rules/matching.xml, rules/measurement.xml, rules/parentchild.xml, rules/unused.xml
+- Extend rules to rules/condition.xml, rules/matching.xml, rules/measurement.xml, rules/parentchild.xml, rules/deprecated.xml

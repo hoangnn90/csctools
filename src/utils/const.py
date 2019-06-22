@@ -1,12 +1,8 @@
-MEASUREMENT_RULE_FILE = "rules/measurement.xml"
-PARENT_CHILD_RULE_FILE = "rules/parentchild.xml"
-UNUSED_RULE_FILE = "rules/unused.xml"
-MATCHING_RULE_FILE = "rules/matching.xml"
 
 parent_child_rule = "ParentChild"
 measurement_rule = "Measurement"
 condition_rule = "Condition"
-unusedtag_rule = "UnUsedTag"
+deprecatedtag_rule = "DeprecatedTag"
 profilehandle_rule = "ProfileHandle"
 
 customer = "customer.xml"

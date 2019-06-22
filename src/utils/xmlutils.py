@@ -6,6 +6,16 @@ from xml.etree.ElementTree import XMLParser
 from utils import const
 from utils import logutils
 
+MEASUREMENT_RULE_FILE = "rules\measurement.xml"
+PARENT_CHILD_RULE_FILE = "rules\parentchild.xml"
+DEPRECATED_RULE_FILE = "rules\deprecated.xml"
+MATCHING_RULE_FILE = "rules\matching.xml"
+
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+
 class XmlHelperException(Exception):
     def __init__(self, message):
         super(XmlHelperException, self).__init__(message)
@@ -147,16 +157,16 @@ class XmlHelper(LineNumberingParser):
                 element_list.append(element_dict)
         return element_list
 
-    def getUnUsedRules(self):
-        """Get all unused tags defined in UNUSED_RULE_FILE
+    def getDeprecatedRules(self):
+        """Get all deprecated tags defined in DEPRECATED_RULE_FILE
         """
         rules = []
-        tree = ET.parse(const.UNUSED_RULE_FILE)
+        tree = ET.parse(resource_path(DEPRECATED_RULE_FILE))
         root = tree.getroot()
         for e in root.findall("Rule"):
             info = {}
             info['name'] = e.get('name')
-            for cond in self.getAllTag(const.UNUSED_RULE_FILE):
+            for cond in self.getAllTag(resource_path(DEPRECATED_RULE_FILE)):
                 if cond is not "CSCRules" and cond is not "Rule":
                     child = e.find(cond)
                     if child is not None:
@@ -165,14 +175,14 @@ class XmlHelper(LineNumberingParser):
         return rules
 
     def getMatchingRules(self):
-        """Get all matching rules defined in UNUSED_RULE_FILE
+        """Get all matching rules defined in DEPRECATED_RULE_FILE
         """
         rules = []
-        tree = ET.parse(const.MATCHING_RULE_FILE)
+        tree = ET.parse(resource_path(MATCHING_RULE_FILE))
         root = tree.getroot()
         for e in root.findall("Rule"):
             info = {}
-            for cond in self.getAllTag(const.MATCHING_RULE_FILE):
+            for cond in self.getAllTag(resource_path(MATCHING_RULE_FILE)):
                 if cond is not "CSCRules" and cond is not "Rule":
                     child = e.find(cond)
                     if child is not None:
@@ -209,7 +219,7 @@ class XmlHelper(LineNumberingParser):
     def validateParentChildRule(self, file, info):
         """Validate parent-child rule
         """
-        pairs = self.getPair(const.PARENT_CHILD_RULE_FILE, "Rule", "Parent", "Child")
+        pairs = self.getPair(resource_path(PARENT_CHILD_RULE_FILE), "Rule", "Parent", "Child")
         for parent, childs in pairs.items():
             tags = childs.rstrip().split(',')
             for child in tags:
@@ -222,7 +232,7 @@ class XmlHelper(LineNumberingParser):
     def validateMeasurementRule(self, file, info):
         """Validate measurement rule is valid in @file with device @info
         """
-        pairs = self.getPair(const.MEASUREMENT_RULE_FILE, "Rule", "Quantity", "Item")
+        pairs = self.getPair(resource_path(MEASUREMENT_RULE_FILE), "Rule", "Quantity", "Item")
         for quantity, item in pairs.items():
             content = self.getTagContent(file, quantity)
             if content is not None:
@@ -233,10 +243,10 @@ class XmlHelper(LineNumberingParser):
                 else:
                     logutils.log_error("Tag '%s' is %d but '%s' is %d in '%s'" % (quantity, value, item, count, self.file))
 
-    def validateUnusedRule(self, file, info):
-        """Validate unused rule in @file with device @info
+    def validateDeprecatedTag(self, file, info):
+        """Validate deprecated tag in @file with device @info
         """
-        rules = self.getUnUsedRules()
+        rules = self.getDeprecatedRules()
         for rule in rules:
             if self.isInfoMatchingWithRule(rule, info) is True:
                 tag_name = rule["name"]

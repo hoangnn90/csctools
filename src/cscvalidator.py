@@ -92,7 +92,7 @@ class CSCValidator(QtWidgets.QDialog):
         provider.add(const.parent_child_rule, cscrulevalidator.CSCParentChildRuleValidator)
         provider.add(const.condition_rule, cscrulevalidator.CSCConditionRuleValidator)
         provider.add(const.measurement_rule, cscrulevalidator.CSCMeasurementRuleValidator)
-        provider.add(const.unusedtag_rule, cscrulevalidator.CSCUnUsedTagRuleValidator)
+        provider.add(const.deprecatedtag_rule, cscrulevalidator.CSCDeprecatedTagRuleValidator)
         provider.add(const.profilehandle_rule, cscrulevalidator.CSCProfileHandleRuleValidator)
         return provider
 
@@ -103,15 +103,15 @@ class CSCValidator(QtWidgets.QDialog):
             const.parent_child_rule,
             const.measurement_rule,
             const.condition_rule,
-            const.unusedtag_rule,
+            const.deprecatedtag_rule,
             const.profilehandle_rule
         ])
-        map.add(const.cscfeature, [const.unusedtag_rule])
-        map.add(const.cscfeature_network, [const.unusedtag_rule])
-        map.add(const.default_application_order, [const.unusedtag_rule])
-        map.add(const.default_workspace, [const.unusedtag_rule])
-        map.add(const.apps, [const.unusedtag_rule])
-        map.add(const.others, [const.unusedtag_rule])
+        map.add(const.cscfeature, [const.deprecatedtag_rule])
+        map.add(const.cscfeature_network, [const.deprecatedtag_rule])
+        map.add(const.default_application_order, [const.deprecatedtag_rule])
+        map.add(const.default_workspace, [const.deprecatedtag_rule])
+        map.add(const.apps, [const.deprecatedtag_rule])
+        map.add(const.others, [const.deprecatedtag_rule])
         return map
 
     def onLogChanged(self, text):

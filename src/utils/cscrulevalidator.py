@@ -48,15 +48,15 @@ class CSCMeasurementRuleValidator(CscRuleValidator):
         self.m_helper.validateMeasurementRule(self.file, info)
 
 
-class CSCUnUsedTagRuleValidator(CscRuleValidator):
-    """ Unused tag rule validator
+class CSCDeprecatedTagRuleValidator(CscRuleValidator):
+    """ Deprecated tag rule validator
     """
     def __init__(self, file):
         self.file=file
         CscRuleValidator.__init__(self, file)
 
     def validate(self, info):
-        self.m_helper.validateUnusedRule(self.file, info)
+        self.m_helper.validateDeprecatedTag(self.file, info)
 
 class CSCMatchingTagRuleValidator(CscRuleValidator):
     """ Matching tag rule validator
