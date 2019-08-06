@@ -106,5 +106,5 @@ venv.bak/
 # HTML
 *.html
 
-# XML
-*.xml
+# utest
+*.test.py

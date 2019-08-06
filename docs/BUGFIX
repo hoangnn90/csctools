@@ -1,0 +1,61 @@
+# CSCSearch
+v0.10
+* Fix error find sale code for old models (//CSC_NILE/Strawberry/EXYNOS5/a5xlte_MM/EUR/
+, //PEACE_CSC/Strawberry/EXYNOS5/jackpotlte/CSC/EUR/)
+* Fix error "Client unknown -use 'client' command to create it"
+* Write all result with * value (alternative with option leave it as blank)
+* Update main window size
+
+v0.11
+* Fix error Client can only be used from host
+
+v0.12
+* Optimize search progress by searching only files of selected sale code
+
+v0.13
+* Fix not found sale code EUR in branch //CSC_NILE/Strawberry/EXYNOS5/hero2lte/EUR/EUR
+
+v0.14
+* Separate tag values by ';'
+
+v0.15
+* Fix bug show result dialog event result not found
+
+v0.16
+* Fix bug sync file not existed in repo
+
+# CSCChangeListCreator
+v0.01
+* Initial version
+
+v0.02
+* Handle exception in case file not map to wsp / not sync to wsp
+* Correct the tool name
+* Update changelist description
+* Create changelist if not error
+
+v0.03
+* Fix error that store log of previous Create trial
+* Remove result box layout
+* Print sale not existed in repo
+* Print not checkout files in data directory
+
+v0.04
+* Fix detect single sale code in OMC wrongly (//PEACE_CSC/Strawberry/EXYNOS5/a50/OMC/BOG/)
+* Fix wrong error message when sale code not found or not find file in data directory
+
+v0.05
+* Remove warning messsage "Following file(s) are in data directory but not found CSC in repo ..."
+
+v0.06
+* Fix error 'Access for user USER  has not been enabled by 'p4 protect'
+* Fix error change server address
+* Fix bug connect failed but still print success message
+
+# CSCValidator
+v0.01
+* Initial version
+
+v0.02
+* Validate plain text for cscfeature & cscfeature_network
+* Fix bug sync file not existed in repo

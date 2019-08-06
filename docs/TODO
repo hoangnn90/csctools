@@ -1,0 +1,12 @@
+# Both CSCSearch & CSCChangeListCreator & CSCValidator
+- Transform as a web application (Django/Flask)
+
+# CSCSearch
+- Extend CSC file type to support other types (e.g: json)
+- Extend to able to search multiple tags
+
+# CSCChangeListCreator
+- Extend to support other CSC file type
+
+# CSCValidator
+- Extend rules to rules/condition.xml, rules/matching.xml, rules/measurement.xml, rules/parentchild.xml, rules/deprecated.xml
