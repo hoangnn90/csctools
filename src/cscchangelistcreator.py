@@ -21,7 +21,7 @@ from utils.stringutils import isNotBlank
 
 UI_MAIN_WINDOW = "ui\cscchangelistcreator.ui"
 ICON_FILE = "ui\cscchangelistcreator.png"
-VERSION = "0.06"
+VERSION = "0.07"
 EXTENSION = [{'extension': '.dat', 'directory': 'etc'}] # {extension, directory}
 
 def resource_path(relative_path):
